@@ -1,0 +1,28 @@
+{
+  "name": "S-Tec Operations and Sales Integrated Management System",
+  "short_name": "S-Tec Operations",
+  "description": "에스텍 운영 및 영업 통합관리 시스템 — Designed & Developed by Rat Rae Choi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0D1B3E",
+  "theme_color": "#0B1F8A",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

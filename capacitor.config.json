@@ -1,0 +1,13 @@
+{
+  "appId": "kr.stecbest.operations",
+  "appName": "S-Tec Operations",
+  "webDir": "www",
+  "server": {
+    "url": "https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/",
+    "androidScheme": "https",
+    "allowNavigation": ["sadness500-boop.github.io", "*.supabase.co", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com"]
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

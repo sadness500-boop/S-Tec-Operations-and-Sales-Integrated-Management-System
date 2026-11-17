@@ -1,0 +1,53 @@
+# S-Tec Operations and Sales Integrated Management System
+### 에스텍 운영 및 영업 통합관리 시스템 · v1.1.0
+
+하나의 아이디로 에스텍 7개 프로그램을 쓰는 **메인 프로그램**입니다.
+메인 화면에는 7개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
+
+| 순서 | 프로그램 (English) | 한글 | 저장소 |
+|---|---|---|---|
+| 1 | Attendance Management Software | 근태관리 | Attendance-Management-Software |
+| 2 | S-Tec-Business-Site-Overview | 사업장 현황 지도 | S-Tec-Business-Site-Overview |
+| 3 | S-Tec-Quotation-System | 용역인력 견적 | S-Tec-Quotation-System |
+| 4 | Workload-Based Cost and Labor Estimation Method | 업무량 기반 산정 | Workload-Based-Cost-and-Labor-Estimation-Method |
+| 5 | S-Tec short estimate | 단기인력 견적 | S-Ttec-short-estimate |
+| 6 | S-Tec-Complaint-Response-System | 고객 불만처리 | S-Tec-Complaint-Response-System |
+| 7 | Program for Process Standardization and Manual Creation | 업무표준화·매뉴얼 | Program-for-Process-Standardization-and-Manual-Creation |
+
+- 웹 주소: https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/
+- 미리보기(데모 모드, 서버 연결 없음): 위 주소 끝에 `?demo=1` (일반 사용자 화면은 `?demo=1&as=user`)
+- 파일 하나로 여는 배포본: `releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.1.0.html`
+
+### 기능
+- **통합 로그인** — 7개 프로그램과 같은 Supabase 서버·같은 아이디 · 가입 신청 · 비밀번호 찾기 · 임시 비밀번호 후 변경 강제
+- **메인 화면** — 담당 카드 · 다운로드 QR · 친구추천 · 주간/야간/시스템 테마 · 관리범위·사용기한·이 기기 · 프로그램 카드(권한별 표시)
+- **제작자 관리 콘솔**
+  - 👥 사용자: 가입 승인 · 차단/해제 · 계정 사용기한 · 임시 비밀번호 · 강제 로그아웃 · 역할 · 메모 · 삭제 · 엑셀(CSV)
+  - 🔐 프로그램별 권한: 사람 × 프로그램 표 — 사용/사용 안 함 · 프로그램별 사용기한 · 담당 지사
+  - 📱 기기: 기기 목록 · 기기 차단/해제
+  - 📜 접속기록 · 🧾 관리 작업 기록: 검색 · 엑셀(CSV)
+  - ⚙️ 전체 설정: 가입 신청 · 승인 필요 · 기본 사용기간 · 앱 전체 잠금
+  - 🧩 프로그램 등록: 새 프로그램 추가 · 시험 공개(제작자·관리자만 보기) · 숨김 · 순서
+- **S-Tec Media Wall** — 메인 화면 가운데: 왼쪽 사진(서서히 바뀜) · 오른쪽 영상(재생/정지 · 이전/다음 · 소리 · 음량) · 아래 파노라마 띠 · 분류(근무 영상 · Complaint 사례 · 직원 디오라마 · 3D 피규어)
+- **새 버전 안내** — version.json 이 바뀌면 화면 위에 「새로고침」 안내
+
+### 서버 (한 번만)
+Supabase → SQL Editor → `server/supabase_integrated.sql` 전체를 붙여넣고 Run.
+(프로그램 등록부 · 새 프로그램 권한 · 메인 화면용 함수를 추가합니다. 기존 자료는 지우지 않습니다.)
+실행 전에도 메인 프로그램은 기본 7개 프로그램 목록으로 동작합니다.
+
+### 폴더
+```
+index.html            메인 프로그램
+demo.js               데모 모드(예시 자료)
+auth-config.json      서버 주소·공개키 (secret 키는 절대 넣지 않음)
+version.json          현재 버전 — 올리면 사용자 화면에 새 버전 안내
+server/               서버 SQL
+assets/ icons/        앱 아이콘 · 로고 · 3D 피규어 · 프로그램 아이콘
+media/                Media Wall 사진(photo) · 영상(video) · 미리보기(thumb) · media.json
+vendor/               supabase-js · QR 만들기
+releases/             버전별 배포본(HTML · APK)
+build.py              releases 배포본 만들기
+```
+
+Designed & Developed by Rat Rae Choi
