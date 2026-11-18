@@ -433,6 +433,7 @@ span.cell{display:inline-block}
 <div id="adm" class="hidden"></div>
 
 <script src="vendor/supabase.js"></script>
+<script src="vendor/stec-master.js"></script>
 <script src="vendor/qr.js"></script>
 <script>
 /* =====================================================================
@@ -443,7 +444,7 @@ span.cell{display:inline-block}
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.4.3';
+const APP_VERSION = '1.5.0';
 const APP_DATE = '2026-11-18';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -470,6 +471,7 @@ const BUILTIN = [
   {code:'stlr', name:'법률 대응 시스템',   full_name:'Legal Response System', url:'https://sadness500-boop.github.io/S-Tec-Legal-Response-System/', icon:'assets/apps/stlr.png', color:'#1F3A73', sort:80, uses_access:true, note:'부당 클레임·근무자 사안 법률 검토 Word·PPT·PDF'}
 ];
 const BRANCHES = ['동부','서부','남부','중부'];
+try{ if(window.StecMaster) StecMaster.branchKeys(BRANCHES); }catch(e){}
 const ROLE_KO = {owner:'제작자', admin:'관리자', user:'사용자'};
 const STATUS_KO = {pending:'승인 대기', active:'사용 중', suspended:'차단'};
 const EV_KO = {login:'로그인', login_fail:'로그인 실패', logout:'로그아웃', blocked:'접속 거부', forced:'강제 로그아웃', app_open:'프로그램 열기'};
@@ -701,6 +703,7 @@ async function checkin(event){
   }
   if(res && res.ok){
     PROFILE = res.profile; lsSet(LS.prof, JSON.stringify(PROFILE)); lsSet(LS.okAt, String(Date.now()));
+    try{ if(window.StecMaster && !DEMO) StecMaster.refresh().catch(() => {}); }catch(e){}
     roBanner(!!(res.device && res.device.readonly));
     if(PROFILE.must_change_pw || recoveryMode){ viewChangePw(!recoveryMode); return false; }
     unlock(); renderHome(); if(MW.ready && MW.playing){ try{ mwVid().play().catch(() => {}); }catch(e){} } await loadPrograms(); return true;
@@ -892,7 +895,7 @@ async function checkVersion(){
 const ADM = { tab:'users', users:[], access:[], q:'', st:'', logs:[], logUser:'', devUser:'', progs:[] };
 function closeAdmin(){ $('adm').classList.add('hidden'); $('adm').innerHTML = ''; if(PROFILE) document.body.classList.remove('locked'); if(MW.ready && MW.playing){ try{ mwVid().play().catch(() => {}); }catch(e){} } }
 function admErr(e){ toast('처리하지 못했습니다: ' + (e && e.message || e)); }
-const TABS = [['users','👥 사용자'],['access','🔐 프로그램별 권한'],['devices','📱 기기'],['logs','📜 접속기록'],['alogs','🧾 관리 작업 기록'],['settings','⚙️ 전체 설정'],['programs','🧩 프로그램 등록']];
+const TABS = [['users','👥 사용자'],['access','🔐 프로그램별 권한'],['devices','📱 기기'],['logs','📜 접속기록'],['alogs','🧾 관리 작업 기록'],['settings','⚙️ 전체 설정'],['master','🏢 기준정보'],['programs','🧩 프로그램 등록']];
 /* ---------- 관리 콘솔 화면 확대 · 축소 ---------- */
 const AZ_KEY = 'stim_adm_zoom', AZ_WIDE = 'stim_adm_wide';
 function admZoomSet(z){
@@ -974,6 +977,7 @@ async function admTab(t, reload){
     else if(t === 'alogs') await admAlogs();
     else if(t === 'settings') await admSettings();
     else if(t === 'programs') await admPrograms();
+    else if(t === 'master') await admMaster();
   }catch(e){ body.innerHTML = `<div class="note warn">불러오지 못했습니다: ${E(e && e.message || e)}</div>`; }
 }
 async function fetchUsers(){ const {data, error} = await SB.rpc('admin_list_users'); if(error) throw error; ADM.users = data || []; return ADM.users; }
@@ -1215,6 +1219,34 @@ async function admSettings(){
 }
 
 /* 🧩 프로그램 등록 */
+/* 🏢 기준정보 — 8개 프로그램 공통 회사 · 조직 · 사업장 */
+async function admMaster(){
+  const M = window.StecMaster;
+  if(!M){ $('admBody').innerHTML = '<div class="note warn">기준정보 도구(vendor/stec-master.js)를 불러오지 못했습니다.</div>'; return; }
+  let srvErr = '';
+  if(!DEMO){ try{ await M.refresh(); }catch(e){ srvErr = String(e.message || e); } }
+  const co = M.companies(), og = M.orgs(), st = M.sites(), c = M.cache();
+  const del = (kind, i) => `<button class="mini rd" data-del="${kind}" data-i="${i}">삭제</button>`;
+  const tbl = (head, rows) => `<div class="tbl-wrap"><table class="t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('') || `<tr><td colspan="${head.length}" style="color:var(--mute)">아직 없습니다 — 기존 에스텍베스트 자료로 동작 중</td></tr>`}</tbody></table></div>`;
+  $('admBody').innerHTML = `<div class="note">여기에 넣은 <b>회사 · 조직(본부·지사·지점·기타) · 사업장</b>은 8개 프로그램이 함께 씁니다. 프로그램마다 따로 만들 필요가 없습니다.<br>
+      「📂 자료 입력 · 불러오기」 → 엑셀 양식에 적어 불러오면 한 번에 들어갑니다. 같은 이름이 있으면 적은 칸만 바뀌고, 없으면 새로 추가됩니다. 각 프로그램 왼쪽 아래 「📂 자료」에서도 그 프로그램용 양식으로 넣을 수 있습니다.</div>
+    ${srvErr ? `<div class="note warn">서버 기준정보를 읽지 못했습니다: ${E(srvErr)}${/master_get|function/.test(srvErr) ? ' — Supabase에서 server/supabase_master.sql 을 실행하세요.' : ''}</div>` : ''}
+    <div class="tools"><button class="btn" id="msOpen" style="width:auto">📂 자료 입력 · 불러오기 (엑셀)</button><a class="btn sec" style="width:auto;text-decoration:none;text-align:center" href="${E(M.pdfUrl('stim'))}" target="_blank" rel="noopener">📄 작성 안내서(PDF)</a>
+      <span style="color:var(--mute);font-size:12.5px">회사 ${co.length} · 조직 ${og.length} · 사업장 ${st.length}${c.at ? ' · 마지막 변경 ' + fmtDT(c.at) : ''}</span></div>
+    <h3 style="margin:18px 0 8px;font-size:15px">회사 (${co.length})</h3>
+    ${tbl(['회사명','정식 상호','대표자','사업자등록번호','본사 주소','대표 전화',''], co.map((x, i) => `<tr><td><b>${E(x.name)}</b></td><td>${E(x.full || '')}</td><td>${E(x.ceo || '')}</td><td>${E(x.bizNo || '')}</td><td class="wrap">${E(x.addr || '')}</td><td>${E(x.tel || '')}</td><td>${del('companies', i)}</td></tr>`))}
+    <h3 style="margin:18px 0 8px;font-size:15px">조직 (${og.length})</h3>
+    ${tbl(['조직명','약칭','구분','상위 조직','회사','책임자','연락처','주소',''], og.map((x, i) => `<tr><td><b>${E(x.name)}</b></td><td><span class="pill" style="background:${E(M.color(M.orgKey(x)))}22;color:${E(M.color(M.orgKey(x)))}">${E(M.orgKey(x))}</span></td><td>${E(x.type || '')}</td><td>${E(x.parent || '')}</td><td>${E(x.company || '')}</td><td>${E([x.title, x.head].filter(Boolean).join(' '))}</td><td>${E(x.tel || '')}</td><td class="wrap">${E(x.addr || '')}</td><td>${del('orgs', i)}</td></tr>`))}
+    <h3 style="margin:18px 0 8px;font-size:15px">사업장 (${st.length})</h3>
+    ${tbl(['사업장명','소속 조직','회사','형태','업무','근무형태','T/O','주소','좌표',''], st.map((x, i) => `<tr><td><b>${E(x.name)}</b></td><td>${E(x.org || '')}</td><td>${E(x.company || '')}</td><td>${E(x.type || '')}</td><td>${E(x.work || '')}</td><td>${E(x.shift || '')}</td><td>${E(x.to == null ? '' : x.to)}</td><td class="wrap">${E(x.addr || '')}</td><td>${x.lat != null && x.lng != null ? '✔' : '-'}</td><td>${del('sites', i)}</td></tr>`))}`;
+  $('msOpen').onclick = () => { M.register({code:'stim', button:false, apply:() => { setTimeout(() => admTab('master'), 300); return ''; }}); M.open(); };
+  $('admBody').querySelectorAll('button[data-del]').forEach(b => b.onclick = async () => {
+    const kind = b.dataset.del, list = (kind === 'companies' ? M.companies() : kind === 'orgs' ? M.orgs() : M.sites()).slice(), x = list[+b.dataset.i];
+    if(!confirmBox(`「${x.name}」을(를) 기준정보에서 지울까요?\n8개 프로그램 목록에서 빠집니다(기존 에스텍베스트 기본 자료는 그대로).`)) return;
+    list.splice(+b.dataset.i, 1);
+    try{ await M.save(kind, list, '삭제: ' + x.name); toast('지웠습니다'); admTab('master'); }catch(e){ admErr(e); }
+  });
+}
 async function admPrograms(){
   const body = $('admBody');
   const {data, error} = await SB.rpc('admin_list_programs');

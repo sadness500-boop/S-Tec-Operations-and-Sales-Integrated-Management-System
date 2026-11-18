@@ -71,3 +71,9 @@ Designed & Developed by Rat Rae Choi
 #### v1.4.2 (프로그램 8개)
 - 프로그램 메뉴에 8번째 「Legal Response System(법률 대응 시스템)」 추가 — `stlr`, https://sadness500-boop.github.io/S-Tec-Legal-Response-System/
 - 서버 등록부에도 추가: `server/supabase_integrated.sql`(다시 실행해도 안전) 또는 관리 콘솔 「🧩 프로그램 등록」
+
+#### v1.5.0 (공통 기준정보 · 자료 양식)
+- `server/supabase_master.sql` — 공통 기준정보 표(master_data) · `master_get()` · `admin_master_put()` (제작자·관리자)
+- `vendor/stec-master.js` — 8개 프로그램이 함께 쓰는 기준정보 도구: 엑셀 양식 만들기 · 불러오기(미리보기·검사) · 지사·사업장·회사 목록에 더하기
+- 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
+- `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
