@@ -9,6 +9,10 @@ assert f"APP_VERSION = '{ver}'" in s, 'index.html 의 APP_VERSION 과 version.js
 for js in ['vendor/supabase.js', 'vendor/qr.js']:
     code = (R / js).read_text(encoding='utf-8').replace('</script', '<\\/script')
     s = s.replace(f'<script src="{js}"></script>', f'<script>/* {js} */\n{code}\n</script>')
+# 전체 백업 도구도 파일 안에 넣음 (관리 콘솔 「💾 전체 백업」이 인터넷 주소 없이도 동작)
+extra = ''.join(f'<script data-src="{js}">/* {js} */\n' + (R / js).read_text(encoding='utf-8').replace('</script', '<\\/script') + '\n</script>\n'
+                for js in ['vendor/exceljs.min.js', 'vendor/stec-backup.js'])
+s = s.replace('</body>', extra + '</body>', 1)
 def datauri(m):
     p = R / m.group(2)
     if not p.exists(): return m.group(0)
