@@ -62,3 +62,7 @@ Designed & Developed by Rat Rae Choi
 - 관리 콘솔 「💾 전체 백업」(제작자) — 7개 프로그램 서버 자료 + 이 기기에만 있는 자료를 엑셀 한 파일로 (`vendor/stec-backup.js`, `vendor/exceljs.min.js`)
 - `server/supabase_backup.sql` — `admin_backup_export()` (제작자만 · 읽기 전용 · 비밀번호 제외)
 - 엑셀 「원본_복원용」 시트: 같은 키의 조각을 순서대로 이어 붙이면 원래 자료(JSON)
+
+#### v1.4.0 (디자인 새 단장)
+- 히어로를 에스텍 디오라마 그림(`assets/hero-diorama.webp`)으로 교체, Pretendard 글꼴, 유리 효과 상단 바, 새 프로그램 카드, 어두운 Media Wall
+- Media Wall 사진 42장(직원 디오라마 27 · 3D 피규어 15) · 영상 28편(근무 영상 17 · Complaint 사례 11)으로 교체
