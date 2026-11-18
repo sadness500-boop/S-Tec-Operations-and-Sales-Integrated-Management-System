@@ -16,9 +16,9 @@ s = s.replace('</body>', extra + '</body>', 1)
 def datauri(m):
     p = R / m.group(2)
     if not p.exists(): return m.group(0)
-    mime = 'image/png' if p.suffix == '.png' else 'image/jpeg'
+    mime = {'.png':'image/png', '.webp':'image/webp'}.get(p.suffix, 'image/jpeg')
     return m.group(1) + f'data:{mime};base64,' + base64.b64encode(p.read_bytes()).decode()
-s = re.sub(r'''((?:src=|href=)["']|['"])((?:assets|icons)/[\w./-]+\.(?:png|jpg))''', datauri, s)
+s = re.sub(r'''((?:src=|href=)["']|['"])((?:assets|icons)/[\w./-]+\.(?:png|jpg|webp))''', datauri, s)
 out = R / 'releases' / f'S-Tec-Operations-and-Sales-Integrated-Management-System_v{ver}.html'
 out.write_text(s, encoding='utf-8')
 print(out, round(out.stat().st_size / 1024), 'KB')
