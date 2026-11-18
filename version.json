@@ -1,7 +1,7 @@
 {
-  "version": "1.4.0",
+  "version": "1.4.1",
   "date": "2026-11-18",
-  "note": "디자인 새 단장 — 히어로 디오라마 · Pretendard 글꼴 · 유리 효과 상단 바 · 새 카드 디자인 · Media Wall 사진 42장 · 영상 28편 교체",
-  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.0.html",
-  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.0.apk"
+  "note": "Media Wall 탭 정리(전체 · 근무 영상 · Complaint 사례) · 영상 2편 추가(노조집회 대응영상 1 · 지게차운전 사고영상) · 제작자 서명 필기체",
+  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.1.html",
+  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.1.apk"
 }
