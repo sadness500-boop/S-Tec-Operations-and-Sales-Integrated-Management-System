@@ -13,6 +13,9 @@ for js in ['vendor/supabase.js', 'vendor/qr.js']:
 extra = ''.join(f'<script data-src="{js}">/* {js} */\n' + (R / js).read_text(encoding='utf-8').replace('</script', '<\\/script') + '\n</script>\n'
                 for js in ['vendor/exceljs.min.js', 'vendor/stec-backup.js'])
 s = s.replace('</body>', extra + '</body>', 1)
+# 공통 기준정보 도구도 파일 안에 넣음 (PC에서 파일로 열어도 「🏢 기준정보」 동작)
+_sm = (R / 'vendor/stec-master.js').read_text(encoding='utf-8').replace('</script', '<\\/script')
+s = s.replace('<script src="vendor/stec-master.js"></script>', '<script data-src="vendor/stec-master.js">\n' + _sm + '\n</script>', 1)
 def datauri(m):
     p = R / m.group(2)
     if not p.exists(): return m.group(0)
