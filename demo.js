@@ -33,12 +33,12 @@ const PROGS = [
   {code:'stos', name:'업무표준화·매뉴얼', full_name:'Program for Process Standardization and Manual Creation', url:'https://sadness500-boop.github.io/Program-for-Process-Standardization-and-Manual-Creation/', icon:'assets/apps/stos.png', color:'#2F6FD0', sort:70, visible:true, beta:false, uses_access:true, version:'1.3.2', min_version:'', note:'업무표준·업무매뉴얼 제작'}
 ];
 const DEV = [
-  {id:'d-1', user_id:'u0', email:'owner@stec.example', user_name:'최민영', name:'동부지사 PC', ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131', blocked:false, first_seen:ago(90000), last_seen:ago(1), last_ip:'211.234.10.21'},
-  {id:'d-2', user_id:'u0', email:'owner@stec.example', user_name:'최민영', name:'휴대폰', ua:'Mozilla/5.0 (Linux; Android 15; SM-S921N) Mobile', blocked:false, first_seen:ago(80000), last_seen:ago(300), last_ip:'223.38.1.5'},
-  {id:'d-3', user_id:'u1', email:'kim.east@stec.example', user_name:'김동부', name:'PC-동부-02', ua:'Mozilla/5.0 (Windows NT 10.0) Edge/131', blocked:false, first_seen:ago(60000), last_seen:ago(40), last_ip:'211.234.10.22'},
-  {id:'d-4', user_id:'u2', email:'lee.site@stec.example', user_name:'이현장', name:'Galaxy S24', ua:'Mozilla/5.0 (Linux; Android 14; SM-S921N) Mobile', blocked:false, first_seen:ago(40000), last_seen:ago(120), last_ip:'223.38.7.80'},
-  {id:'d-5', user_id:'u2', email:'lee.site@stec.example', user_name:'이현장', name:'분실 휴대폰', ua:'Mozilla/5.0 (Linux; Android 13) Mobile', blocked:true, first_seen:ago(39000), last_seen:ago(9000), last_ip:'223.38.7.11'},
-  {id:'d-6', user_id:'u3', email:'park.sales@stec.example', user_name:'박영업', name:'iPhone 15', ua:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1) Safari', blocked:false, first_seen:ago(30000), last_seen:ago(1400), last_ip:'118.235.2.9'}
+  {id:'d-1', user_id:'u0', email:'owner@stec.example', user_name:'최민영', name:'동부지사 PC', ua:'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131', blocked:false, first_seen:ago(90000), last_seen:ago(1), last_ip:'211.234.10.21', approved:true, readonly:false},
+  {id:'d-2', user_id:'u0', email:'owner@stec.example', user_name:'최민영', name:'휴대폰', ua:'Mozilla/5.0 (Linux; Android 15; SM-S921N) Mobile', blocked:false, first_seen:ago(80000), last_seen:ago(300), last_ip:'223.38.1.5', approved:true, readonly:false},
+  {id:'d-3', user_id:'u1', email:'kim.east@stec.example', user_name:'김동부', name:'PC-동부-02', ua:'Mozilla/5.0 (Windows NT 10.0) Edge/131', blocked:false, first_seen:ago(60000), last_seen:ago(40), last_ip:'211.234.10.22', approved:true, readonly:false},
+  {id:'d-4', user_id:'u2', email:'lee.site@stec.example', user_name:'이현장', name:'Galaxy S24', ua:'Mozilla/5.0 (Linux; Android 14; SM-S921N) Mobile', blocked:false, first_seen:ago(40000), last_seen:ago(120), last_ip:'223.38.7.80', approved:true, readonly:true},
+  {id:'d-5', user_id:'u2', email:'lee.site@stec.example', user_name:'이현장', name:'분실 휴대폰', ua:'Mozilla/5.0 (Linux; Android 13) Mobile', blocked:true, first_seen:ago(39000), last_seen:ago(9000), last_ip:'223.38.7.11', approved:true, readonly:false},
+  {id:'d-6', user_id:'u3', email:'park.sales@stec.example', user_name:'박영업', name:'iPhone 15', ua:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1) Safari', blocked:false, first_seen:ago(30000), last_seen:ago(1400), last_ip:'118.235.2.9', approved:false, readonly:false}
 ];
 let LID = 100;
 const LOGS = [
@@ -74,7 +74,7 @@ const access = (u, code) => {
 };
 const RPC = {
   public_settings: () => ok({signup_open:SET.signup_open, require_approval:SET.require_approval, global_lock:SET.global_lock, lock_message:SET.lock_message}),
-  client_checkin: () => { const u = me(); return ok({ok:true, reason:'ok', lock_message:SET.lock_message, profile:{id:u.id, email:u.email, name:u.name, phone:u.phone, dept:u.dept, role:u.role, status:u.status, expires_at:u.expires_at, must_change_pw:false, scope:u.scope}}); },
+  client_checkin: () => { const u = me(); return ok({ok:true, reason:'ok', lock_message:SET.lock_message, device:{approved:true, readonly:false}, profile:{id:u.id, email:u.email, name:u.name, phone:u.phone, dept:u.dept, role:u.role, status:u.status, expires_at:u.expires_at, must_change_pw:false, scope:u.scope}}); },
   my_programs: () => { const u = me(); return ok({ok:true, admin:u.role !== 'user', programs:PROGS.filter(p => p.visible && (!p.beta || u.role !== 'user')).sort((a,b) => a.sort-b.sort).map(p => Object.assign({}, p, access(u, p.code)))}); },
   app_check: a => { const r = access(me(), a.p_app); return ok(r.access === 'use' ? {ok:true, perm:'use', expires_at:r.app_expires_at, branches:r.branches||[]} : {ok:false, reason:r.access === 'expired' ? 'app_expired' : 'no_app_access', expires_at:r.app_expires_at}); },
   log_logout: () => ok(null), log_login_fail: () => ok(null), mark_pw_changed: () => ok(null),
@@ -100,6 +100,11 @@ const RPC = {
   admin_list_logs: a => ok(LOGS.filter(l => !a.p_user || l.user_id === a.p_user)),
   admin_list_admin_logs: () => ok(ALOGS.slice()),
   admin_get_settings: () => ok(Object.assign({}, SET)),
+  admin_get_device_policy: () => ok({device_approval:!!SET.device_approval, max_devices:SET.max_devices||0}),
+  admin_save_device_policy: a => { SET.device_approval = a.p_approval; SET.max_devices = a.p_max; return ok(null); },
+  admin_set_device: a => { const d = DEV.find(x => x.user_id === a.p_user && x.id === a.p_device); if(a.p_action==='approve') d.approved = true; if(a.p_action==='readonly') d.readonly = true; if(a.p_action==='edit') d.readonly = false; log(U.find(x => x.id === a.p_user), 'device_' + a.p_action, d.name); return ok(null); },
+  log_app_open: () => ok(null),
+  my_device: () => ok({approved:true, blocked:false, readonly:false}),
   admin_save_settings: a => { Object.assign(SET, {signup_open:a.p_signup_open, require_approval:a.p_require_approval, global_lock:a.p_global_lock, lock_message:a.p_lock_message || SET.lock_message, default_days:a.p_default_days, updated_at:new Date().toISOString()}); log(null, 'settings', ''); return ok(null); },
   admin_list_programs: () => ok(PROGS.slice().sort((a,b) => a.sort-b.sort).map(p => Object.assign({}, p))),
   admin_save_program: a => { const p = a.p, i = PROGS.findIndex(x => x.code === p.code); if(i >= 0) PROGS[i] = Object.assign({}, PROGS[i], p); else PROGS.push(p); log(null, 'program', p.code + ' · ' + p.name); return ok(null); },

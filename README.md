@@ -1,5 +1,5 @@
 # S-Tec Operations and Sales Integrated Management System
-### 에스텍 운영 및 영업 통합관리 시스템 · v1.1.0
+### 에스텍 운영 및 영업 통합관리 시스템 · v1.2.0
 
 하나의 아이디로 에스텍 7개 프로그램을 쓰는 **메인 프로그램**입니다.
 메인 화면에는 7개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
@@ -16,7 +16,7 @@
 
 - 웹 주소: https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/
 - 미리보기(데모 모드, 서버 연결 없음): 위 주소 끝에 `?demo=1` (일반 사용자 화면은 `?demo=1&as=user`)
-- 파일 하나로 여는 배포본: `releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.1.0.html`
+- 파일 하나로 여는 배포본: `releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.2.0.html`
 
 ### 기능
 - **통합 로그인** — 7개 프로그램과 같은 Supabase 서버·같은 아이디 · 가입 신청 · 비밀번호 찾기 · 임시 비밀번호 후 변경 강제
@@ -51,3 +51,9 @@ build.py              releases 배포본 만들기
 ```
 
 Designed & Developed by Rat Rae Choi
+
+#### v1.2.0 (5·6단계)
+- `install.html` — 기기별 설치 안내(PC · 안드로이드 · 아이폰), 개별 앱 병행 일정(2026-12-18까지)
+- `sw.js` — PC·휴대폰 홈 화면에 앱으로 설치(화면은 저장하지 않고 늘 최신)
+- `server/supabase_devices_v2.sql` — 새 기기 승인 · 기기별 조회 전용 · 프로그램 열기 기록 (기본값은 꺼짐 → 지금 동작 그대로)
+- `server/tests/test_10_scenarios.py` — 계획서 10가지 시험 (로컬 Postgres에서 실제 서버와 같은 SQL로 실행)

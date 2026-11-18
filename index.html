@@ -261,6 +261,9 @@ html[data-theme="dark"] .mw-head h2{color:#AFC0FF}
 }
 @media (max-width:420px){ .grid{gap:10px} .card{min-height:168px} .card .bd{padding:11px 11px 10px} .card .row1{flex-direction:column;align-items:flex-start;gap:8px}
   .card .ico{width:48px;height:48px;border-radius:12px}  .card .ko{font-size:11px} .card h3{font-size:13.5px} .card .desc{font-size:11.5px;margin:6px 0} .tag{font-size:11px;padding:2px 7px} .card .go{font-size:12px} .hero h1{font-size:21px} }
+#roBan{position:fixed;left:50%;transform:translateX(-50%);top:8px;z-index:9000;background:#7C2D12;color:#fff;padding:8px 16px;border-radius:999px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.3);max-width:92vw;text-align:center}
+.p-wait{background:#FEF3C7;color:#92400E}
+@media print{#roBan{display:none}}
 </style>
 </head>
 <body class="locked">
@@ -355,11 +358,12 @@ html[data-theme="dark"] .mw-head h2{color:#AFC0FF}
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const APP_DATE = '2026-11-18';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
 const REPO = 'sadness500-boop/S-Tec-Operations-and-Sales-Integrated-Management-System';
+const INSTALL_URL = WEB_URL + 'install.html';
 const APK_URL = `https://github.com/${REPO}/releases/download/app-latest/stim-latest.apk`;
 /* 7개 프로그램이 함께 쓰는 서버 — auth-config.json 을 먼저 읽고, 없으면 아래 값을 씁니다.
    (publishable 키는 공개해도 되는 키입니다. secret/service_role 키는 절대 넣지 않습니다.) */
@@ -382,15 +386,17 @@ const BUILTIN = [
 const BRANCHES = ['동부','서부','남부','중부'];
 const ROLE_KO = {owner:'제작자', admin:'관리자', user:'사용자'};
 const STATUS_KO = {pending:'승인 대기', active:'사용 중', suspended:'차단'};
-const EV_KO = {login:'로그인', login_fail:'로그인 실패', logout:'로그아웃', blocked:'접속 거부', forced:'강제 로그아웃'};
+const EV_KO = {login:'로그인', login_fail:'로그인 실패', logout:'로그아웃', blocked:'접속 거부', forced:'강제 로그아웃', app_open:'프로그램 열기'};
 const ACT_KO = {approve:'가입 승인', suspend:'차단', activate:'차단 해제', expires:'사용기한', role:'역할 변경', memo:'메모', force_logout:'강제 로그아웃',
   delete:'계정 삭제', temp_password:'임시 비밀번호', device_block:'기기 차단', device_unblock:'기기 차단 해제', settings:'전체 설정', scope:'관리 범위',
-  app_access:'프로그램별 권한', program:'프로그램 등록', program_delete:'프로그램 삭제'};
+  app_access:'프로그램별 권한', program:'프로그램 등록', program_delete:'프로그램 삭제',
+  device_approve:'기기 승인', device_unapprove:'기기 승인 취소', device_readonly:'기기 조회 전용', device_edit:'기기 수정 허용', device_delete:'기기 삭제', device_policy:'기기 정책'};
 const REASON = {
   pending:['⏳','승인 대기 중','가입 신청이 접수되었습니다. 제작자(관리자)가 승인하면 바로 사용할 수 있습니다.<br>승인 후 <b>다시 확인</b>을 누르세요.'],
   suspended:['⛔','사용이 중지된 계정','이 계정은 접속이 차단되었습니다. 필요하면 제작자에게 문의하세요.'],
   expired:['📅','사용기한 만료','사용기한이 지났습니다. 연장이 필요하면 제작자에게 요청하세요.'],
   device_blocked:['📵','이 기기는 사용 제한','이 기기에서는 사용할 수 없도록 설정되었습니다. 다른 기기를 쓰거나 제작자에게 문의하세요.'],
+  device_pending:['📲','새 기기 승인 대기','처음 사용하는 기기입니다. 제작자(관리자)가 관리 콘솔 「기기」에서 이 기기를 승인하면 바로 사용할 수 있습니다.<br>승인 후 <b>다시 확인</b>을 누르세요.'],
   locked:['🛠️','프로그램 점검 중',''],
   no_profile:['❓','계정 정보 없음','계정 정보가 아직 만들어지지 않았습니다. 잠시 뒤 다시 시도하거나 제작자에게 문의하세요.'],
   offline:['📶','인터넷 연결 필요','로그인 확인을 위해 인터넷 연결이 필요합니다. 연결 후 다시 시도하세요.'],
@@ -609,6 +615,7 @@ async function checkin(event){
   }
   if(res && res.ok){
     PROFILE = res.profile; lsSet(LS.prof, JSON.stringify(PROFILE)); lsSet(LS.okAt, String(Date.now()));
+    roBanner(!!(res.device && res.device.readonly));
     if(PROFILE.must_change_pw || recoveryMode){ viewChangePw(!recoveryMode); return false; }
     unlock(); renderHome(); if(MW.ready && MW.playing){ try{ mwVid().play().catch(() => {}); }catch(e){} } await loadPrograms(); return true;
   }
@@ -691,7 +698,13 @@ function renderGrid(){
   const n = PROGRAMS.filter(x => x.access === 'use').length;
   $('progSub').textContent = `${PROGRAMS.length}개 중 ${n}개 사용 가능 · 누르면 다시 로그인하지 않고 바로 실행됩니다`;
 }
-function openProgram(code){
+function roBanner(on){
+  let b = $('roBan');
+  if(!on){ if(b) b.remove(); return; }
+  if(!b){ b = document.createElement('div'); b.id = 'roBan'; document.body.appendChild(b); }
+  b.innerHTML = '🔒 이 기기는 <b>조회 전용</b>입니다 — 7개 프로그램 모두 보기만 되고 저장은 되지 않습니다. (변경: 제작자·관리자 → 관리 콘솔 「기기」)';
+}
+async function openProgram(code){
   const pg = PROGRAMS.find(x => x.code === code); if(!pg) return;
   if(pg.access !== 'use' && pg.access !== 'unknown'){
     pop(`<h3>🔒 ${E(pg.full_name || pg.name)}</h3><p><b>${E(PROFILE.name || PROFILE.email)}</b> 님의 계정은 승인되었지만 「${E(pg.full_name || pg.name)}」 사용 권한이 ${pg.access === 'expired' ? `<b>${E(pg.app_expires_at)}</b>에 끝났습니다` : '아직 지정되지 않았습니다'}.</p>
@@ -700,6 +713,7 @@ function openProgram(code){
   }
   if(!pg.url){ toast('실행 주소가 아직 등록되지 않았습니다'); return; }
   if(DEMO){ toast(`데모 모드: 「${pg.full_name || pg.name}」을(를) 엽니다`); return; }
+  try{ await Promise.race([SB.rpc('log_app_open', {p_app:code, p_device:deviceId(), p_device_name:deviceName()}), new Promise(r => setTimeout(r, 900))]); }catch(e){}
   location.href = pg.url;
 }
 
@@ -725,11 +739,13 @@ function qrCanvas(text, size){
   return c;
 }
 $('btnQr').onclick = () => {
-  pop(`<h3>📲 다운로드 QR</h3><p>휴대폰 카메라로 찍으면 통합관리 시스템이 열립니다.<br>· 안드로이드: 열린 화면에서 <b>앱 설치(APK)</b> 안내를 따르세요<br>· 아이폰: 사파리 공유 버튼 → <b>홈 화면에 추가</b></p>
+  pop(`<h3>📲 다운로드 QR</h3><p>휴대폰 카메라로 찍으면 <b>기기별 설치 안내</b>가 열립니다.<br>· 안드로이드: 열린 화면에서 <b>앱 설치(APK)</b> 안내를 따르세요<br>· 아이폰: 사파리 공유 버튼 → <b>홈 화면에 추가</b></p>
     <div class="qr" id="qrBox"></div><div class="copy"><input id="qrUrl" readonly value="${E(WEB_URL)}"><button class="btn sm" id="qrCp">복사</button></div>
     <div class="p-row"><a class="btn gr" style="text-align:center;text-decoration:none" href="${E(APK_URL)}" target="_blank" rel="noopener">🤖 안드로이드 앱(APK) 내려받기</a></div>
+    <div class="p-row">${PWA.ev ? '<button class="btn" id="qInst">💻 이 PC에 앱으로 설치</button>' : ''}<a class="btn sec" style="text-align:center;text-decoration:none" href="${E(INSTALL_URL)}" target="_blank" rel="noopener">📘 기기별 설치 안내</a></div>
     <div class="p-row"><button class="btn sec" id="qX">닫기</button></div>`);
-  try{ $('qrBox').appendChild(qrCanvas(WEB_URL, 220)); }catch(e){ $('qrBox').textContent = 'QR을 만들지 못했습니다'; }
+  try{ $('qrBox').appendChild(qrCanvas(INSTALL_URL, 220)); }catch(e){ $('qrBox').textContent = 'QR을 만들지 못했습니다'; }
+  if($('qInst')) $('qInst').onclick = async () => { try{ PWA.ev.prompt(); await PWA.ev.userChoice; }catch(e){} PWA.ev = null; closePop(); };
   $('qrCp').onclick = () => copyText(WEB_URL); $('qX').onclick = closePop;
 };
 async function copyText(t){ try{ await navigator.clipboard.writeText(t); toast('복사했습니다'); }catch(e){ const i = document.createElement('textarea'); i.value = t; document.body.appendChild(i); i.select(); try{ document.execCommand('copy'); toast('복사했습니다'); }catch(_){} i.remove(); } }
@@ -962,18 +978,28 @@ function editAccess(uid, code){
 async function admDevices(){
   if(!ADM.users.length) await fetchUsers();
   const {data, error} = await SB.rpc('admin_list_devices', {p_user: ADM.devUser || null}); if(error) throw error;
-  const D = data || [];
-  $('admBody').innerHTML = `<div class="note">사용자가 로그인한 기기 목록입니다. <b>차단</b>하면 그 기기에서는 7개 프로그램 모두 사용할 수 없습니다(그 사람의 다른 기기는 그대로). 휴대폰 분실 시 바로 차단하세요.</div>
-    <div class="tools"><select id="dvU"><option value="">전체 사용자</option>${ADM.users.map(u => `<option value="${u.id}" ${ADM.devUser === u.id ? 'selected' : ''}>${E(u.name || u.email)}</option>`).join('')}</select><span style="color:var(--mute);font-size:12.5px">${D.length}대</span></div>
-    <div class="tbl-wrap"><table class="t"><thead><tr><th>사용자</th><th>기기 이름</th><th>종류(브라우저)</th><th>처음 접속</th><th>최근 접속</th><th>IP</th><th>상태</th><th></th></tr></thead><tbody>
+  const D = data || [], np = D.filter(d => d.approved === false).length;
+  const st = d => d.blocked ? '<span class="pill p-no">차단</span>' : d.approved === false ? '<span class="pill p-wait">승인 대기</span>' : '<span class="pill p-ok">허용</span>';
+  const md = d => d.readonly ? '<span class="pill p-mute">조회 전용</span>' : '<span class="pill p-ok">수정 가능</span>';
+  $('admBody').innerHTML = `<div class="note">사용자가 로그인한 기기 목록입니다. <b>차단</b>하면 그 기기에서는 7개 프로그램 모두 사용할 수 없습니다(그 사람의 다른 기기는 그대로). 휴대폰 분실 시 바로 차단하세요.<br>
+      <b>승인</b> — 「설정」에서 새 기기 승인을 켜면 두 번째 기기부터 여기서 승인해야 씁니다. · <b>조회 전용</b> — 그 기기에서는 보기만 되고 저장이 서버에서 거부됩니다.</div>
+    <div class="tools"><select id="dvU"><option value="">전체 사용자</option>${ADM.users.map(u => `<option value="${u.id}" ${ADM.devUser === u.id ? 'selected' : ''}>${E(u.name || u.email)}</option>`).join('')}</select><span style="color:var(--mute);font-size:12.5px">${D.length}대${np ? ` · <b style="color:#B45309">승인 대기 ${np}대</b>` : ''}</span></div>
+    <div class="tbl-wrap"><table class="t"><thead><tr><th>사용자</th><th>기기 이름</th><th>종류(브라우저)</th><th>처음 접속</th><th>최근 접속</th><th>IP</th><th>상태</th><th>권한</th><th></th></tr></thead><tbody>
     ${D.map((d, i) => `<tr><td><b>${E(d.user_name || '')}</b><br><small style="color:var(--mute)">${E(d.email)}</small></td><td>${E(d.name || '-')}</td><td class="wrap"><small>${E((d.ua || '').slice(0,90))}</small></td>
-      <td>${fmtDT(d.first_seen)}</td><td>${fmtDT(d.last_seen)}</td><td>${E(d.last_ip || '')}</td><td>${d.blocked ? '<span class="pill p-no">차단</span>' : '<span class="pill p-ok">허용</span>'}</td>
-      <td><button class="mini ${d.blocked ? 'gr' : 'rd'}" data-i="${i}">${d.blocked ? '차단 해제' : '📵 차단'}</button></td></tr>`).join('') || '<tr><td colspan="8">기기가 없습니다</td></tr>'}</tbody></table></div>`;
+      <td>${fmtDT(d.first_seen)}</td><td>${fmtDT(d.last_seen)}</td><td>${E(d.last_ip || '')}</td><td>${st(d)}</td><td>${md(d)}</td>
+      <td style="white-space:nowrap">${d.approved === false ? `<button class="mini gr" data-a="approve" data-i="${i}">✔ 승인</button> ` : ''}<button class="mini" data-a="${d.readonly ? 'edit' : 'readonly'}" data-i="${i}">${d.readonly ? '✏️ 수정 허용' : '👁 조회 전용'}</button>
+        <button class="mini ${d.blocked ? 'gr' : 'rd'}" data-a="block" data-i="${i}">${d.blocked ? '차단 해제' : '📵 차단'}</button></td></tr>`).join('') || '<tr><td colspan="9">기기가 없습니다</td></tr>'}</tbody></table></div>`;
   $('dvU').onchange = () => { ADM.devUser = $('dvU').value; admTab('devices'); };
-  $('admBody').querySelectorAll('button[data-i]').forEach(b => b.onclick = async () => {
-    const d = D[+b.dataset.i]; if(!d.blocked && !confirmBox(`${d.user_name || d.email}의 「${d.name || '기기'}」를 차단할까요?`)) return;
-    const {error} = await SB.rpc('admin_set_device_block', {p_user:d.user_id, p_device:d.id, p_blocked:!d.blocked}); if(error){ admErr(error); return; }
-    toast(d.blocked ? '차단을 풀었습니다' : '기기를 차단했습니다'); admTab('devices'); });
+  $('admBody').querySelectorAll('button[data-a]').forEach(b => b.onclick = async () => {
+    const d = D[+b.dataset.i], a = b.dataset.a, who = `${d.user_name || d.email}의 「${d.name || '기기'}」`;
+    if(a === 'block'){
+      if(!d.blocked && !confirmBox(`${who}를 차단할까요?`)) return;
+      const {error} = await SB.rpc('admin_set_device_block', {p_user:d.user_id, p_device:d.id, p_blocked:!d.blocked}); if(error){ admErr(error); return; }
+      toast(d.blocked ? '차단을 풀었습니다' : '기기를 차단했습니다'); admTab('devices'); return;
+    }
+    if(a === 'readonly' && !confirmBox(`${who}를 조회 전용으로 바꿀까요?\n그 기기에서는 7개 프로그램 모두 저장이 되지 않습니다.`)) return;
+    const {error} = await SB.rpc('admin_set_device', {p_user:d.user_id, p_device:d.id, p_action:a}); if(error){ admErr(error); return; }
+    toast({approve:'기기를 승인했습니다', readonly:'조회 전용으로 바꿨습니다', edit:'수정할 수 있게 바꿨습니다'}[a]); admTab('devices'); });
 }
 
 /* 📜 접속기록 */
@@ -1021,7 +1047,20 @@ async function admSettings(){
       <label class="p-f" style="grid-column:1/-1"><span>잠금 안내 문구</span><input id="stMsg" value="${E(s.lock_message || '')}"></label>
     </div>
     <div class="p-row" style="max-width:360px"><button class="btn" id="stSave" ${isOwner() ? '' : 'disabled'}>설정 저장</button></div>
-    <p style="color:var(--mute);font-size:12.5px;margin-top:14px">제작자 이메일: ${E(s.owner_email || '')} · 마지막 변경: ${fmtDT(s.updated_at)}</p>`;
+    <p style="color:var(--mute);font-size:12.5px;margin-top:14px">제작자 이메일: ${E(s.owner_email || '')} · 마지막 변경: ${fmtDT(s.updated_at)}</p>
+    <h3 style="margin:26px 0 8px;font-size:15px">📱 기기 정책</h3>
+    <div class="note" id="dpNote">새 기기를 관리자 승인 후에만 쓰게 하거나, 한 사람이 쓸 수 있는 기기 수를 정합니다. 첫 기기는 늘 자동 승인되고, 제작자·관리자는 적용되지 않습니다.</div>
+    <div class="form-grid" id="dpBox"><span style="color:var(--mute)">불러오는 중…</span></div>`;
+  (async () => {
+    const {data:dp, error:de} = await SB.rpc('admin_get_device_policy');
+    if(de){ $('dpBox').innerHTML = `<span style="color:var(--mute)">기기 정책을 쓰려면 Supabase에서 <b>server/supabase_devices_v2.sql</b>을 먼저 실행하세요.</span>`; return; }
+    $('dpBox').innerHTML = `<label class="p-f"><span>새 기기 승인</span><div class="seg"><label><input type="checkbox" id="dpAp" ${dp.device_approval ? 'checked' : ''}> 두 번째 기기부터 관리자 승인 후 사용</label></div></label>
+      <label class="p-f"><span>1인당 기기 수 (0 = 제한 없음)</span><input type="number" id="dpMax" min="0" max="50" value="${E(dp.max_devices ?? 0)}"></label>
+      <div class="p-row" style="grid-column:1/-1;max-width:360px"><button class="btn" id="dpSave" ${isOwner() ? '' : 'disabled'}>기기 정책 저장</button></div>`;
+    $('dpSave').onclick = async () => {
+      const {error} = await SB.rpc('admin_save_device_policy', {p_approval:$('dpAp').checked, p_max:+$('dpMax').value || 0});
+      if(error){ admErr(error); return; } toast('기기 정책을 저장했습니다'); admTab('settings'); };
+  })();
   $('stSave').onclick = async () => {
     if($('stLock').checked && !s.global_lock && !confirmBox('앱 전체를 잠글까요?\n제작자·관리자를 뺀 모든 사용자가 7개 프로그램을 쓸 수 없게 됩니다.')) return;
     const {error} = await SB.rpc('admin_save_settings', {p_signup_open:$('stSign').checked, p_require_approval:$('stAppr').checked, p_global_lock:$('stLock').checked, p_lock_message:$('stMsg').value, p_default_days:+$('stDays').value || 0});
@@ -1203,6 +1242,11 @@ async function boot(){
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && SB && PROFILE) checkin('resume'); });
 setInterval(() => { if(SB && PROFILE) checkin('resume'); }, 5 * 60 * 1000);
 window.STIM = { version:APP_VERSION, get profile(){ return PROFILE; }, get client(){ return SB; }, logout, openAdmin };
+/* ---------- 앱 설치(PC·휴대폰 홈 화면) · 통합 앱 표시 ---------- */
+const PWA = {ev:null};
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); PWA.ev = e; });
+try{ if(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()) localStorage.setItem('stec_shell', 'integrated'); }catch(e){}
+if('serviceWorker' in navigator && location.protocol === 'https:' && !DEMO){ window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }
 const startUp = () => { boot(); checkVersion(); mediaInit(); };
 if(DEMO && !window.STIM_DEMO){ const s = document.createElement('script'); s.src = 'demo.js'; s.onload = startUp; s.onerror = () => viewBlocked('server', {detail:'demo.js 를 불러오지 못했습니다'}); document.head.appendChild(s); }
 else startUp();
