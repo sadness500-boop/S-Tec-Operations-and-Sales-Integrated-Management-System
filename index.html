@@ -358,7 +358,7 @@ html[data-theme="dark"] .mw-head h2{color:#AFC0FF}
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 const APP_DATE = '2026-11-18';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -806,14 +806,43 @@ const ADM = { tab:'users', users:[], access:[], q:'', st:'', logs:[], logUser:''
 function closeAdmin(){ $('adm').classList.add('hidden'); $('adm').innerHTML = ''; if(PROFILE) document.body.classList.remove('locked'); if(MW.ready && MW.playing){ try{ mwVid().play().catch(() => {}); }catch(e){} } }
 function admErr(e){ toast('처리하지 못했습니다: ' + (e && e.message || e)); }
 const TABS = [['users','👥 사용자'],['access','🔐 프로그램별 권한'],['devices','📱 기기'],['logs','📜 접속기록'],['alogs','🧾 관리 작업 기록'],['settings','⚙️ 전체 설정'],['programs','🧩 프로그램 등록']];
+/* ---------- 💾 전체 백업 (엑셀) ---------- */
+function loadScript(src){ return new Promise((res, rej) => { if(document.querySelector(`script[data-src="${src}"]`)) return res(); const s = document.createElement('script'); s.src = src; s.dataset.src = src; s.onload = res; s.onerror = () => rej(new Error(src + ' 를 불러오지 못했습니다')); document.head.appendChild(s); }); }
+async function backupAll(){
+  if(!isOwner()){ toast('전체 백업은 제작자만 할 수 있습니다'); return; }
+  pop(`<h3>💾 전체 백업</h3><p>7개 프로그램의 <b>서버 자료 전체</b>(사용자 · 권한 · 기기 · 근태 사업장/직원 · 저장 자료 · 기록 · 설정)를 엑셀 한 파일로 내려받습니다.</p>
+    <label class="seg" style="display:block;margin:8px 0"><input type="checkbox" id="bkLoc" checked> <b>이 기기 자료</b>도 함께 넣기 <small style="color:var(--mute)">(이 브라우저에만 저장된 견적 · 불만처리 등의 자료, 로그인 정보는 제외)</small></label>
+    <p style="color:#B3261E;font-size:13px">개인정보가 들어 있으니 회사 보안 폴더에 보관하세요.</p>
+    <div class="p-row"><button class="btn" id="bkGo">엑셀 만들기</button><button class="btn sec" id="bkX">닫기</button></div><p id="bkMsg" style="color:var(--mute);font-size:13px"></p>`);
+  $('bkX').onclick = closePop;
+  $('bkGo').onclick = async () => {
+    const msg = t => { if($('bkMsg')) $('bkMsg').textContent = t; }; $('bkGo').disabled = true;
+    try{
+      msg('서버 자료를 받는 중…');
+      const {data, error} = await SB.rpc('admin_backup_export'); if(error) throw new Error(/admin_backup_export/.test(error.message) ? 'Supabase에서 server/supabase_backup.sql 을 먼저 실행하세요' : error.message);
+      msg('엑셀 도구를 불러오는 중…'); await loadScript('vendor/exceljs.min.js'); await loadScript('vendor/stec-backup.js');
+      const local = $('bkLoc').checked ? await StecBackup.collectLocal(deviceName()) : null;
+      let logo = ''; try{ const b = await (await fetch('icons/icon-192.png')).blob(); logo = await new Promise(r => { const f = new FileReader(); f.onload = () => r(String(f.result).split(',')[1]); f.readAsDataURL(b); }); }catch(e){}
+      msg('엑셀을 만드는 중…');
+      const wb = StecBackup.build(ExcelJS, {server:data, local, logo, appVersion:APP_VERSION});
+      const buf = await wb.xlsx.writeBuffer();
+      const d = new Date(Date.now() + 9*3600e3).toISOString(), stamp = d.slice(0,10).replace(/-/g,'') + '_' + d.slice(11,16).replace(':','');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+      a.download = `S-Tec_통합관리_전체백업_${stamp}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+      msg(`완료 — ${a.download} (${Math.round(buf.byteLength / 1024)} KB)`); toast('전체 백업 파일을 내려받았습니다');
+    }catch(e){ msg('⚠️ ' + (e.message || e)); }
+    if($('bkGo')) $('bkGo').disabled = false;
+  };
+}
 async function openAdmin(tab){
   if(!isAdmin()){ toast('관리자만 열 수 있습니다'); return; }
   const a = $('adm'); a.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
   a.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>🛡️ 제작자 관리 콘솔<small>${E(PROFILE.name || PROFILE.email)} · ${E(ROLE_KO[PROFILE.role])} — 7개 프로그램 통합 관리</small></h2>
-    <div style="margin-left:auto;display:flex;gap:6px"><button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
+    <div style="margin-left:auto;display:flex;gap:6px">${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}<button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
     <div class="adm-tabs" id="admTabs">${TABS.map(t => `<button data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
     <div class="adm-body"><div class="adm-card" id="admBody"></div><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${APP_VERSION}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
-  $('admX').onclick = closeAdmin; $('admRe').onclick = () => admTab(ADM.tab, true);
+  $('admX').onclick = closeAdmin; if($('admBk')) $('admBk').onclick = backupAll;
+  $('admRe').onclick = () => admTab(ADM.tab, true);
   $('admTabs').querySelectorAll('button').forEach(b => b.onclick = () => admTab(b.dataset.t, true));
   await admTab(tab || 'users', true);
 }

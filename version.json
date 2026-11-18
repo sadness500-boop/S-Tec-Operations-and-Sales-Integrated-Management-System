@@ -1,7 +1,7 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "date": "2026-11-18",
-  "note": "5·6단계 — 기기별 설치 안내(PC·안드로이드·아이폰) · PC 앱 설치 · 새 기기 승인 · 기기별 조회 전용 · 프로그램 열기 기록 · 개별 앱 병행 안내(2026-12-18까지)",
-  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.2.0.html",
-  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.2.0.apk"
+  "note": "관리 콘솔 「💾 전체 백업」 — 7개 프로그램 자료를 엑셀 한 파일로(서버 자료 + 이 기기 자료) · 기기 정책 서버 적용",
+  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.3.0.html",
+  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.3.0.apk"
 }

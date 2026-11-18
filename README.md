@@ -57,3 +57,8 @@ Designed & Developed by Rat Rae Choi
 - `sw.js` — PC·휴대폰 홈 화면에 앱으로 설치(화면은 저장하지 않고 늘 최신)
 - `server/supabase_devices_v2.sql` — 새 기기 승인 · 기기별 조회 전용 · 프로그램 열기 기록 (기본값은 꺼짐 → 지금 동작 그대로)
 - `server/tests/test_10_scenarios.py` — 계획서 10가지 시험 (로컬 Postgres에서 실제 서버와 같은 SQL로 실행)
+
+#### v1.3.0 (전체 백업)
+- 관리 콘솔 「💾 전체 백업」(제작자) — 7개 프로그램 서버 자료 + 이 기기에만 있는 자료를 엑셀 한 파일로 (`vendor/stec-backup.js`, `vendor/exceljs.min.js`)
+- `server/supabase_backup.sql` — `admin_backup_export()` (제작자만 · 읽기 전용 · 비밀번호 제외)
+- 엑셀 「원본_복원용」 시트: 같은 키의 조각을 순서대로 이어 붙이면 원래 자료(JSON)
