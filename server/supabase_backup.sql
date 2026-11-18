@@ -8,7 +8,7 @@
 --  ● 여러 번 실행해도 안전합니다.
 -- =====================================================================
 create or replace function public.admin_backup_export() returns json
-language plpgsql stable security definer set search_path = public as $$
+language plpgsql volatile security definer set search_path = public as $$
 declare out jsonb := '{}'::jsonb; t text; rows jsonb;
 begin
   if not public.is_owner() then raise exception '전체 백업은 제작자만 할 수 있습니다'; end if;
