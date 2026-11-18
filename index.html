@@ -217,7 +217,13 @@ html[data-theme="dark"] .tag{color:color-mix(in srgb,var(--c) 45%,#fff);backgrou
 .adm-tabs{max-width:1300px;margin:0 auto;display:flex;gap:6px;padding:10px 18px 0;flex-wrap:wrap}
 .adm-tabs button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:11px 11px 0 0;padding:9px 13px;font-weight:700;font-size:13.5px;border-bottom:0}
 .adm-tabs button.on{background:var(--nv);color:#fff;border-color:var(--nv)}
-.adm-body{max-width:1300px;margin:0 auto;padding:0 18px 30px}
+.adm-body{max-width:calc(1300px / var(--az,1));margin:0 auto;padding:0 18px 30px;zoom:var(--az,1)}
+.adm-body.wide{max-width:none}
+.zoomer{display:inline-flex;align-items:center;gap:2px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:2px}
+.zoomer button{border:0;background:none;color:#fff;border-radius:999px;min-width:30px;height:30px;padding:0 8px;font-size:13px;font-weight:700}
+.zoomer button:hover{background:rgba(255,255,255,.18)}
+.zoomer .zv{min-width:52px;font-variant-numeric:tabular-nums}
+.zoomer button.on{background:#fff;color:#0B1F8A}
 .adm-card{background:var(--panel);border:1px solid var(--line);border-radius:0 14px 14px 14px;padding:16px;box-shadow:var(--shadow)}
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
 .kpi{background:var(--soft);border-radius:12px;padding:10px 12px;text-align:center}
@@ -437,7 +443,7 @@ span.cell{display:inline-block}
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.4.2';
+const APP_VERSION = '1.4.3';
 const APP_DATE = '2026-11-18';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -887,6 +893,35 @@ const ADM = { tab:'users', users:[], access:[], q:'', st:'', logs:[], logUser:''
 function closeAdmin(){ $('adm').classList.add('hidden'); $('adm').innerHTML = ''; if(PROFILE) document.body.classList.remove('locked'); if(MW.ready && MW.playing){ try{ mwVid().play().catch(() => {}); }catch(e){} } }
 function admErr(e){ toast('처리하지 못했습니다: ' + (e && e.message || e)); }
 const TABS = [['users','👥 사용자'],['access','🔐 프로그램별 권한'],['devices','📱 기기'],['logs','📜 접속기록'],['alogs','🧾 관리 작업 기록'],['settings','⚙️ 전체 설정'],['programs','🧩 프로그램 등록']];
+/* ---------- 관리 콘솔 화면 확대 · 축소 ---------- */
+const AZ_KEY = 'stim_adm_zoom', AZ_WIDE = 'stim_adm_wide';
+function admZoomSet(z){
+  z = Math.round(Math.min(1.5, Math.max(0.4, z)) * 100) / 100;
+  const b = document.querySelector('.adm-body'); if(!b) return;
+  b.style.setProperty('--az', z); lsSet(AZ_KEY, String(z));
+  if($('azV')) $('azV').textContent = Math.round(z * 100) + '%';
+}
+function admZoomFit(){
+  const b = document.querySelector('.adm-body'); if(!b) return;
+  const over = () => { let r = 1; b.querySelectorAll('.tbl-wrap').forEach(w => { if(w.clientWidth && w.scrollWidth > w.clientWidth + 2) r = Math.min(r, w.clientWidth / w.scrollWidth); });
+    const pg = document.documentElement; if(pg.scrollWidth > pg.clientWidth + 2) r = Math.min(r, pg.clientWidth / pg.scrollWidth); return r; };
+  const frame = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  (async () => {
+    let z = 1; admZoomSet(1); await frame();
+    for(let i = 0; i < 6; i++){ const r = over(); if(r >= 0.995) break; z = Math.max(0.4, z * r * 0.99); admZoomSet(z); await frame(); }
+    toast(z < 0.995 ? `표 전체가 보이도록 ${Math.round(z * 100)}%로 줄였습니다` : '이미 한 화면에 다 보입니다 (100%)');
+  })();
+}
+function admZoomInit(){
+  const b = document.querySelector('.adm-body'); if(!b) return;
+  if(lsGet(AZ_WIDE) === '1'){ b.classList.add('wide'); $('azWide').classList.add('on'); }
+  admZoomSet(parseFloat(lsGet(AZ_KEY)) || 1);
+  $('azOut').onclick = () => admZoomSet((parseFloat(b.style.getPropertyValue('--az')) || 1) - 0.1);
+  $('azIn').onclick = () => admZoomSet((parseFloat(b.style.getPropertyValue('--az')) || 1) + 0.1);
+  $('azV').onclick = () => admZoomSet(1);
+  $('azFit').onclick = admZoomFit;
+  $('azWide').onclick = () => { const on = b.classList.toggle('wide'); $('azWide').classList.toggle('on', on); lsSet(AZ_WIDE, on ? '1' : '0'); };
+}
 /* ---------- 💾 전체 백업 (엑셀) ---------- */
 function loadScript(src){ return new Promise((res, rej) => { if(document.querySelector(`script[data-src="${src}"]`)) return res(); const s = document.createElement('script'); s.src = src; s.dataset.src = src; s.onload = res; s.onerror = () => rej(new Error(src + ' 를 불러오지 못했습니다')); document.head.appendChild(s); }); }
 async function backupAll(){
@@ -919,10 +954,11 @@ async function openAdmin(tab){
   if(!isAdmin()){ toast('관리자만 열 수 있습니다'); return; }
   const a = $('adm'); a.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
   a.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>🛡️ 제작자 관리 콘솔<small>${E(PROFILE.name || PROFILE.email)} · ${E(ROLE_KO[PROFILE.role])} — 8개 프로그램 통합 관리</small></h2>
-    <div style="margin-left:auto;display:flex;gap:6px">${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}<button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
+    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="zoomer" title="관리 화면 크기 (Ctrl + 마우스 휠과 같음)"><button id="azOut" title="줄이기">－</button><button class="zv" id="azV" title="100%로">100%</button><button id="azIn" title="키우기">＋</button><button id="azFit" title="표 전체가 한 화면에 보이도록">↔ 맞춤</button><button id="azWide" title="화면 너비 끝까지 넓게">⇔ 넓게</button></span>${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}<button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
     <div class="adm-tabs" id="admTabs">${TABS.map(t => `<button data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
     <div class="adm-body"><div class="adm-card" id="admBody"></div><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${APP_VERSION}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
-  $('admX').onclick = closeAdmin; if($('admBk')) $('admBk').onclick = backupAll;
+  $('admX').onclick = closeAdmin; admZoomInit();
+  if($('admBk')) $('admBk').onclick = backupAll;
   $('admRe').onclick = () => admTab(ADM.tab, true);
   $('admTabs').querySelectorAll('button').forEach(b => b.onclick = () => admTab(b.dataset.t, true));
   await admTab(tab || 'users', true);

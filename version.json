@@ -1,7 +1,7 @@
 {
-  "version": "1.4.2",
+  "version": "1.4.3",
   "date": "2026-11-18",
-  "note": "프로그램 메뉴에 8번째 프로그램 「Legal Response System(법률 대응 시스템)」 추가",
-  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.2.html",
-  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.2.apk"
+  "note": "관리 콘솔 화면 확대·축소(－ ＋ · 맞춤 · 넓게)",
+  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.3.html",
+  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.4.3.apk"
 }
