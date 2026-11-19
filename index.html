@@ -208,6 +208,37 @@ html[data-theme="dark"] .tag{color:color-mix(in srgb,var(--c) 45%,#fff);backgrou
 .qr canvas,.qr img{border-radius:10px;background:#fff;padding:10px}
 .copy{display:flex;gap:6px}.copy input{flex:1}
 
+
+/* ---------- 사용 안내 (프로그램 안 매뉴얼) ---------- */
+#guide{position:fixed;inset:0;z-index:8100;background:var(--bg);overflow:auto}
+.gd-wrap{max-width:1180px;margin:0 auto;padding:0 18px 30px;display:grid;grid-template-columns:250px 1fr;gap:16px}
+.gd-toc{position:sticky;top:120px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;max-height:calc(100vh - 140px);overflow:auto}
+.gd-toc a{display:block;padding:8px 10px;border-radius:9px;color:var(--ink);text-decoration:none;font-size:13.5px;line-height:1.35}
+.gd-toc a:hover,.gd-toc a.on{background:var(--soft);color:var(--nv);font-weight:700}
+html[data-theme="dark"] .gd-toc a:hover,html[data-theme="dark"] .gd-toc a.on{color:#AFC0FF}
+.gd-sec{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow);scroll-margin-top:120px}
+.gd-sec h3{margin:0 0 10px;font-size:19px;display:flex;gap:10px;align-items:center}
+.gd-sec h3 .n{flex:none;width:28px;height:28px;border-radius:8px;background:var(--nv);color:#fff;display:grid;place-items:center;font-size:13px}
+.gd-key{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.gd-key span{background:var(--soft);border-radius:999px;padding:4px 10px;font-size:12.5px;color:var(--ink2)}
+.gd-sec p,.gd-sec li{font-size:14.5px;line-height:1.7;color:var(--ink)}
+.gd-sec ul,.gd-sec ol{padding-left:22px;margin:6px 0 10px}
+.gd-sec table{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:13.5px}
+.gd-sec th{background:var(--nv);color:#fff;text-align:left;padding:8px 10px;font-weight:700}
+.gd-sec td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top;white-space:pre-line;line-height:1.55}
+.gd-sec td:first-child{font-weight:700;white-space:pre-line}
+.gd-tip,.gd-warn{border-radius:11px;padding:10px 13px;margin:8px 0 10px;font-size:14px;line-height:1.65}
+.gd-tip{background:rgba(14,124,134,.10);border-left:4px solid #0E7C86}
+.gd-warn{background:rgba(227,66,52,.10);border-left:4px solid #E34234}
+.gd-head{padding:16px 2px 6px}
+.gd-head h1{margin:0;font-size:24px}.gd-head p{margin:4px 0 0;color:var(--mute);font-size:13.5px}
+.gd-search{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:999px;padding:7px 14px;min-width:200px;font-size:13.5px}
+.gd-search::placeholder{color:rgba(255,255,255,.7)}
+mark.gd-hit{background:#FFE58A;color:#111;border-radius:3px}
+.gd-empty{padding:30px;text-align:center;color:var(--mute)}
+@media(max-width:820px){.gd-wrap{grid-template-columns:1fr}.gd-toc{position:static;max-height:none;display:flex;overflow-x:auto;gap:4px;padding:6px}.gd-toc a{white-space:nowrap}.gd-search{min-width:0;flex:1}}
+@media print{body>*:not(#guide){display:none!important}#guide{position:static;overflow:visible}.adm-top,.adm-tabs,.gd-toc{display:none!important}.gd-wrap{display:block}.gd-sec{box-shadow:none;break-inside:avoid-page}}
+
 /* ---------- 관리 콘솔 ---------- */
 #adm{position:fixed;inset:0;z-index:8000;background:var(--bg);overflow:auto}
 .adm-top{position:sticky;top:0;z-index:5;background:linear-gradient(100deg,var(--nvd),var(--nv));color:#fff}
@@ -436,16 +467,18 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
   <div class="grid" id="grid"></div>
 
   <div class="foot-sign">
-    <span>Things to enjoy · 공지사항 · <a href="https://github.com/sadness500-boop/S-Tec-Operations-and-Sales-Integrated-Management-System#readme" target="_blank" rel="noopener">사용 안내</a> · © 에스텍 그룹</span>
+    <span>Things to enjoy · 공지사항 · <a href="#" id="guideLink">사용 안내</a> · © 에스텍 그룹</span>
     <span class="sig">Designed &amp; Developed by Rat Rae Choi</span>
   </div>
 </main>
 
 <div id="pop" class="hidden"><div class="p-box" id="popBox"></div></div>
 <div id="adm" class="hidden"></div>
+<div id="guide" class="hidden"></div>
 
 <script src="vendor/supabase.js"></script>
 <script src="vendor/stec-master.js"></script>
+<script src="vendor/stec-guide.js"></script>
 <script src="vendor/qr.js"></script>
 <script>
 /* =====================================================================
@@ -456,7 +489,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.6.1';
+const APP_VERSION = '1.6.2';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -909,6 +942,40 @@ const ADM = { tab:'users', users:[], access:[], q:'', st:'', logs:[], logUser:''
 function closeAdmin(){ $('adm').classList.add('hidden'); $('adm').innerHTML = ''; if(PROFILE) document.body.classList.remove('locked'); if(MW.ready && MW.playing){ try{ mwVid().play().catch(() => {}); }catch(e){} } }
 function admErr(e){ toast('처리하지 못했습니다: ' + (e && e.message || e)); }
 const TABS = [['users','👥 사용자'],['access','🔐 프로그램별 권한'],['devices','📱 기기'],['logs','📜 접속기록'],['alogs','🧾 관리 작업 기록'],['settings','⚙️ 전체 설정'],['master','🏢 기준정보'],['programs','🧩 프로그램 등록']];
+
+/* ---------- 사용 안내 (프로그램 안 매뉴얼) ---------- */
+const GD = { doc: 'user', q: '' };
+function openGuide(doc){
+  const G = window.STEC_GUIDE; if(!G){ toast('사용 안내를 불러오지 못했습니다'); return; }
+  const adm = typeof isAdmin === 'function' && isAdmin();
+  GD.doc = (doc === 'admin' && adm) ? 'admin' : 'user'; GD.q = '';
+  const g = $('guide'); g.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
+  g.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>📘 사용 안내<small>에스텍 운영 및 영업 통합관리 시스템 v${E(APP_VERSION)}</small></h2>
+    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="gd-search" id="gdQ" type="search" placeholder="🔎 찾을 말 (예: 비밀번호)"><button class="chip" id="gdPr" title="지금 매뉴얼을 인쇄하거나 PDF로 저장">🖨️ 인쇄</button><button class="chip gr" id="gdX">✕ 닫기</button></div></div></div>
+    <div class="adm-tabs" id="gdTabs" style="max-width:1180px"><button data-d="user">👤 사용자 매뉴얼</button>${adm ? '<button data-d="admin">🛡️ 제작자 관리매뉴얼</button>' : ''}</div>
+    <div id="gdBody"></div>
+    <div class="adm-body" style="max-width:1180px"><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${E(APP_VERSION)}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
+  $('gdX').onclick = closeGuide; $('gdPr').onclick = () => window.print();
+  $('gdTabs').querySelectorAll('button').forEach(b => b.onclick = () => { GD.doc = b.dataset.d; guideRender(); g.scrollTop = 0; });
+  let t; $('gdQ').oninput = e => { clearTimeout(t); t = setTimeout(() => { GD.q = e.target.value.trim(); guideRender(); }, 200); };
+  guideRender(); g.scrollTop = 0;
+}
+function closeGuide(){ const g = $('guide'); g.classList.add('hidden'); g.innerHTML = ''; if($('adm').classList.contains('hidden')) document.body.classList.remove('locked'); }
+function guideRender(){
+  const G = window.STEC_GUIDE, d = G[GD.doc], q = GD.q.toLowerCase();
+  $('gdTabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.d === GD.doc));
+  const hl = s => { const x = E(s); if(!q) return x; const re = new RegExp(E(GD.q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); return x.replace(re, m => `<mark class="gd-hit">${m}</mark>`); };
+  const blk = b => b.p ? `<p>${hl(b.p)}</p>` : b.ul ? `<ul>${b.ul.map(i => `<li>${hl(i)}</li>`).join('')}</ul>` : b.ol ? `<ol>${b.ol.map(i => `<li>${hl(i)}</li>`).join('')}</ol>`
+    : b.tip ? `<div class="gd-tip">💡 ${hl(b.tip)}</div>` : b.warn ? `<div class="gd-warn">⚠️ ${hl(b.warn)}</div>`
+    : b.table ? `<div style="overflow-x:auto"><table><thead><tr>${b.table.head.map(h => `<th>${E(h)}</th>`).join('')}</tr></thead><tbody>${b.table.rows.map(r => `<tr>${r.map(c => `<td>${hl(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '';
+  const secs = d.sections.map((s, i) => ({ s, i })).filter(({ s }) => !q || JSON.stringify(s).toLowerCase().includes(q));
+  $('gdBody').innerHTML = `<div class="gd-wrap" style="padding-top:12px"><nav class="gd-toc" id="gdToc">${secs.map(({ s, i }) => `<a href="#gd-${i}" data-i="${i}">${i + 1}. ${E(s.h)}</a>`).join('') || '<span class="gd-empty">없음</span>'}</nav>
+    <div><div class="gd-head"><h1>${E(d.title)} <small style="font-size:14px;color:var(--mute);font-weight:500">${E(d.en)}</small></h1><p>${E(d.sub)} · 대상: ${E(d.audience)}</p></div>
+    ${secs.map(({ s, i }) => `<section class="gd-sec" id="gd-${i}"><h3><span class="n">${i + 1}</span>${hl(s.h)}</h3>${s.key ? `<div class="gd-key">${s.key.map(k => `<span>${hl(k)}</span>`).join('')}</div>` : ''}${s.blocks.map(blk).join('')}</section>`).join('') || `<div class="gd-sec gd-empty">「${E(GD.q)}」 을(를) 찾지 못했습니다.</div>`}</div></div>`;
+  $('gdToc').querySelectorAll('a').forEach(a => a.onclick = e => { e.preventDefault(); const el = $('gd-' + a.dataset.i); if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); $('gdToc').querySelectorAll('a').forEach(x => x.classList.toggle('on', x === a)); });
+}
+document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('#guideLink'); if(a){ e.preventDefault(); openGuide(); } });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && $('guide') && !$('guide').classList.contains('hidden')) closeGuide(); });
 /* ---------- 프로그램 전체 화면 확대 · 축소 ---------- */
 const PZ_KEY = 'stim_zoom';
 function pageZoomSet(z, quiet){
@@ -984,12 +1051,13 @@ async function openAdmin(tab){
   if(!isAdmin()){ toast('관리자만 열 수 있습니다'); return; }
   const a = $('adm'); a.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
   a.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>🛡️ 제작자 관리 콘솔<small>${E(PROFILE.name || PROFILE.email)} · ${E(ROLE_KO[PROFILE.role])} — 9개 프로그램 통합 관리</small></h2>
-    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="zoomer" title="관리 화면 크기 (Ctrl + 마우스 휠과 같음)"><button id="azOut" title="줄이기">－</button><button class="zv" id="azV" title="100%로">100%</button><button id="azIn" title="키우기">＋</button><button id="azFit" title="표 전체가 한 화면에 보이도록">↔ 맞춤</button><button id="azWide" title="화면 너비 끝까지 넓게">⇔ 넓게</button></span>${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}<button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
+    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="zoomer" title="관리 화면 크기 (Ctrl + 마우스 휠과 같음)"><button id="azOut" title="줄이기">－</button><button class="zv" id="azV" title="100%로">100%</button><button id="azIn" title="키우기">＋</button><button id="azFit" title="표 전체가 한 화면에 보이도록">↔ 맞춤</button><button id="azWide" title="화면 너비 끝까지 넓게">⇔ 넓게</button></span>${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}<button class="chip" id="admGd" title="제작자 관리매뉴얼">📘 매뉴얼</button><button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
     <div class="adm-tabs" id="admTabs">${TABS.map(t => `<button data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
     <div class="adm-body"><div class="adm-card" id="admBody"></div><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${APP_VERSION}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
   $('admX').onclick = closeAdmin; admZoomInit();
   if($('admBk')) $('admBk').onclick = backupAll;
   $('admRe').onclick = () => admTab(ADM.tab, true);
+  $('admGd').onclick = () => openGuide('admin');
   $('admTabs').querySelectorAll('button').forEach(b => b.onclick = () => admTab(b.dataset.t, true));
   await admTab(tab || 'users', true);
 }
