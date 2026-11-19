@@ -1,8 +1,8 @@
 # S-Tec Operations and Sales Integrated Management System
-### 에스텍 운영 및 영업 통합관리 시스템 · v1.2.0
+### 에스텍 운영 및 영업 통합관리 시스템 · v1.6.0
 
-하나의 아이디로 에스텍 8개 프로그램을 쓰는 **메인 프로그램**입니다.
-메인 화면에는 8개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
+하나의 아이디로 에스텍 9개 프로그램을 쓰는 **메인 프로그램**입니다.
+메인 화면에는 9개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
 
 | 순서 | 프로그램 (English) | 한글 | 저장소 |
 |---|---|---|---|
@@ -14,13 +14,14 @@
 | 6 | S-Tec-Complaint-Response-System | 고객 불만처리 | S-Tec-Complaint-Response-System |
 | 7 | Program for Process Standardization and Manual Creation | 업무표준화·매뉴얼 | Program-for-Process-Standardization-and-Manual-Creation |
 | 8 | Legal Response System | 법률 대응 시스템 | S-Tec-Legal-Response-System |
+| 9 | S-Tec Proposal Production System | 제안서 제작시스템 | S-Tec-Proposal-Production-System |
 
 - 웹 주소: https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/
 - 미리보기(데모 모드, 서버 연결 없음): 위 주소 끝에 `?demo=1` (일반 사용자 화면은 `?demo=1&as=user`)
 - 파일 하나로 여는 배포본: `releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.2.0.html`
 
 ### 기능
-- **통합 로그인** — 8개 프로그램과 같은 Supabase 서버·같은 아이디 · 가입 신청 · 비밀번호 찾기 · 임시 비밀번호 후 변경 강제
+- **통합 로그인** — 9개 프로그램과 같은 Supabase 서버·같은 아이디 · 가입 신청 · 비밀번호 찾기 · 임시 비밀번호 후 변경 강제
 - **메인 화면** — 담당 카드 · 다운로드 QR · 친구추천 · 주간/야간/시스템 테마 · 관리범위·사용기한·이 기기 · 프로그램 카드(권한별 표시)
 - **제작자 관리 콘솔**
   - 👥 사용자: 가입 승인 · 차단/해제 · 계정 사용기한 · 임시 비밀번호 · 강제 로그아웃 · 역할 · 메모 · 삭제 · 엑셀(CSV)
@@ -35,7 +36,7 @@
 ### 서버 (한 번만)
 Supabase → SQL Editor → `server/supabase_integrated.sql` 전체를 붙여넣고 Run.
 (프로그램 등록부 · 새 프로그램 권한 · 메인 화면용 함수를 추가합니다. 기존 자료는 지우지 않습니다.)
-실행 전에도 메인 프로그램은 기본 8개 프로그램 목록으로 동작합니다.
+실행 전에도 메인 프로그램은 기본 9개 프로그램 목록으로 동작합니다.
 
 ### 폴더
 ```
@@ -60,7 +61,7 @@ Designed & Developed by Rat Rae Choi
 - `server/tests/test_10_scenarios.py` — 계획서 10가지 시험 (로컬 Postgres에서 실제 서버와 같은 SQL로 실행)
 
 #### v1.3.0 (전체 백업)
-- 관리 콘솔 「💾 전체 백업」(제작자) — 8개 프로그램 서버 자료 + 이 기기에만 있는 자료를 엑셀 한 파일로 (`vendor/stec-backup.js`, `vendor/exceljs.min.js`)
+- 관리 콘솔 「💾 전체 백업」(제작자) — 9개 프로그램 서버 자료 + 이 기기에만 있는 자료를 엑셀 한 파일로 (`vendor/stec-backup.js`, `vendor/exceljs.min.js`)
 - `server/supabase_backup.sql` — `admin_backup_export()` (제작자만 · 읽기 전용 · 비밀번호 제외)
 - 엑셀 「원본_복원용」 시트: 같은 키의 조각을 순서대로 이어 붙이면 원래 자료(JSON)
 
@@ -74,6 +75,11 @@ Designed & Developed by Rat Rae Choi
 
 #### v1.5.0 (공통 기준정보 · 자료 양식)
 - `server/supabase_master.sql` — 공통 기준정보 표(master_data) · `master_get()` · `admin_master_put()` (제작자·관리자)
-- `vendor/stec-master.js` — 8개 프로그램이 함께 쓰는 기준정보 도구: 엑셀 양식 만들기 · 불러오기(미리보기·검사) · 지사·사업장·회사 목록에 더하기
+- `vendor/stec-master.js` — 9개 프로그램이 함께 쓰는 기준정보 도구: 엑셀 양식 만들기 · 불러오기(미리보기·검사) · 지사·사업장·회사 목록에 더하기
 - 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
 - `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
+
+#### v1.6.0 (프로그램 9개)
+- 프로그램 메뉴에 9번째 「S-Tec Proposal Production System(에스텍 제안서 제작시스템)」 추가 — `stpp`, https://sadness500-boop.github.io/S-Tec-Proposal-Production-System/
+- 서버 등록부에도 추가: `server/supabase_integrated.sql`(다시 실행해도 안전) 또는 제안서 저장소의 `server/supabase_app_access_stpp.sql`, 또는 관리 콘솔 「🧩 프로그램 등록」
+- 견적 3종(용역인력 견적·업무량 기반 산정·단기인력 견적)에 「📑 제안서로 보내기」 연동 추가 — 같은 계정 서버(`stec_proposal_inbox`)로 여러 기기 동기화

@@ -1,6 +1,6 @@
 /* =====================================================================
    S-Tec 공통 기준정보 · 자료 양식 / 불러오기  (stec-master.js)
-   — 회사 · 조직(본부 · 지사 · 지점 · 기타) · 사업장을 한 번 넣으면 8개 프로그램이 함께 씁니다.
+   — 회사 · 조직(본부 · 지사 · 지점 · 기타) · 사업장을 한 번 넣으면 9개 프로그램이 함께 씁니다.
    — 프로그램마다 「📂 자료」 버튼: 입력 양식(엑셀) 받기 · 작성 안내서(PDF) · 엑셀 불러오기
    S-Tec Operations and Sales Integrated Management System · Designed & Developed by Rat Rae Choi
    ===================================================================== */
@@ -69,7 +69,7 @@
   var SITE_MAP = ['name', 'org', 'type', 'work', 'shift', 'to', 'company', 'addr', 'since', 'total', 'm', 'f', 'sec', 'cln', 'etc', 'mgr', 'pos', 'mtel', 'stel', 'lat', 'lng', 'note'];
   var PROGRAMS = {
     stim: { en: 'S-Tec Operations and Sales Integrated Management System', ko: '메인(통합관리)', uses: { companies: null, orgs: null, sites: null },
-      what: '메인 관리 콘솔 「🏢 기준정보」에서 8개 프로그램 공통 회사 · 조직 · 사업장을 한 번에 넣습니다.' },
+      what: '메인 관리 콘솔 「🏢 기준정보」에서 9개 프로그램 공통 회사 · 조직 · 사업장을 한 번에 넣습니다.' },
     ams: { en: 'Attendance Management Software', ko: '근태관리', uses: { orgs: ['name', 'type', 'parent', 'company', 'key', 'addr', 'head', 'tel'], sites: ['name', 'org', 'type', 'work', 'shift', 'to', 'company', 'addr'] }, own: true,
       what: '조직 · 사업장 · 인원(근무조 · 근로형태 · 출퇴근 · 휴게) · 급여를 한 번에 등록합니다. 근태관리 「엑셀 자료 반영하기」와 같은 양식입니다.',
       extra: [{ sheet: '인원·급여', title: '인원 · 급여(근로계약서)', desc: '한 줄 = 한 사람. 사업장명 + 성명(또는 사번)으로 기존 인원을 찾아 바꾸고, 없으면 새로 추가합니다.', cols: [
@@ -196,7 +196,7 @@
     g.mergeCells(r, 2, r, 3); put(2, P.ko + ' · S-Tec Operations and Sales Integrated Management System', { color: { argb: 'FF5D6678' } }); r += 2;
     [['하는 일', P.what], ['작성 방법', '① 각 시트의 3번째 줄부터 한 줄에 하나씩 적습니다(1줄 = 항목 이름, 2줄 = 설명).  ② 머리글에 * 가 있는 칸은 꼭 적습니다.  ③ 「(예시)」로 시작하는 줄은 읽지 않습니다 — 지우거나 그대로 두세요.  ④ 빈 칸은 「바꾸지 않음」입니다.'],
      ['불러오기', '프로그램 화면 왼쪽 아래 「📂 자료」 → 「엑셀 불러오기」 → 이 파일 선택 → 미리보기 확인 → 「적용」.'],
-     ['함께 쓰는 자료', '「회사」 · 「조직」 · 「사업장」 시트는 8개 프로그램이 함께 쓰는 공통 기준정보로 저장됩니다(제작자 · 관리자만). 같은 이름이 이미 있으면 적은 칸만 바뀌고, 없으면 새로 추가됩니다.'],
+     ['함께 쓰는 자료', '「회사」 · 「조직」 · 「사업장」 시트는 9개 프로그램이 함께 쓰는 공통 기준정보로 저장됩니다(제작자 · 관리자만). 같은 이름이 이미 있으면 적은 칸만 바뀌고, 없으면 새로 추가됩니다.'],
      ['주의', '회사명 · 조직명 · 사업장명은 시트끼리 같은 글자로 적어야 연결됩니다. 개인정보(연락처 등)가 들어가므로 파일 보관에 주의하세요.']].forEach(function (x) {
       put(2, x[0], { bold: true, color: { argb: GREEN } }); put(3, x[1]); g.getRow(r).height = Math.max(20, Math.ceil(x[1].length / 60) * 16); r++; });
     r++; put(2, '시트', { bold: true, color: { argb: 'FFFFFFFF' } }).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }; put(3, '내용', { bold: true, color: { argb: 'FFFFFFFF' } }).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }; r++;
@@ -333,7 +333,7 @@
     var el = document.createElement('div'); el.id = 'smPop';
     el.innerHTML = '<div class="box" role="dialog" aria-modal="true"><div class="hd"><b>📂 자료 입력 · 불러오기</b><small>' + esc(P.en) + ' · ' + esc(P.ko) + '</small></div><div class="bd">'
       + '<div class="note">' + esc(P.what) + '<div class="sh">' + P.sheets.map(function (s) { return '<span>' + esc(s.sheet) + '</span>'; }).join('') + '</div>'
-      + '회사 · 조직 · 사업장은 <b>8개 프로그램 공통 기준정보</b>로 저장되어 다른 프로그램에도 함께 반영됩니다(제작자 · 관리자만 저장).</div>'
+      + '회사 · 조직 · 사업장은 <b>9개 프로그램 공통 기준정보</b>로 저장되어 다른 프로그램에도 함께 반영됩니다(제작자 · 관리자만 저장).</div>'
       + '<h4>① 입력 양식 받기</h4><div class="row"><button class="b p" data-a="tpl">📥 빈 양식(엑셀)</button><button class="b" data-a="cur">📥 지금 자료 채운 양식</button><button class="b" data-a="pdf">📄 작성 안내서(PDF)</button></div>'
       + '<h4>② 작성한 엑셀 불러오기</h4><div class="row"><button class="b g" data-a="pick">📤 엑셀 파일 고르기</button><input type="file" accept=".xlsx" hidden id="smFile"></div><div id="smPrev"></div>'
       + '<p id="smMsg" style="color:#5D6678;font-size:12.5px;margin:10px 0 0">' + (cache().at ? '공통 기준정보: 회사 ' + companies().length + ' · 조직 ' + orgs().length + ' · 사업장 ' + sites().length + '건 (마지막 변경 ' + String(cache().at).slice(0, 16).replace('T', ' ') + ')' : '공통 기준정보가 아직 비어 있습니다 — 지금은 기존 에스텍베스트 자료로 동작합니다.') + '</p>'

@@ -4,14 +4,14 @@
 --  Designed & Developed by Rat Rae Choi
 --
 --  ● 어디에 실행하나요?
---    8개 프로그램이 함께 쓰는 Supabase 프로젝트(mnsuebexlzhvomxhrear)
+--    9개 프로그램이 함께 쓰는 Supabase 프로젝트(mnsuebexlzhvomxhrear)
 --    → 왼쪽 메뉴 SQL Editor → 이 파일 전체를 붙여넣고 Run.  한 번만 실행하면 됩니다.
 --  ● 먼저 실행되어 있어야 하는 것
 --    · Attendance-Management-Software 저장소의 server/supabase_setup.sql (계정·기기·접속기록)
 --    · S-Tec-Complaint-Response-System 저장소의 server/supabase_app_access.sql (프로그램별 권한)
 --    · Program-for-Process-Standardization-and-Manual-Creation 저장소의 server/supabase_app_access_stos.sql
 --  ● 무엇을 하나요?
---    1) 「프로그램 등록부」(program_registry) 표를 만들고 8개 프로그램을 등록합니다.
+--    1) 「프로그램 등록부」(program_registry) 표를 만들고 9개 프로그램을 등록합니다.
 --       메인 프로그램은 이 표를 읽어 메뉴 카드를 그립니다. 새 프로그램은 관리 콘솔 「🧩 프로그램 등록」에서 추가합니다.
 --    2) 프로그램별 권한(app_access)이 등록부에 있는 프로그램이면 무엇이든 받도록 바꿉니다
 --       (지금은 6개 코드만 허용 → 새 프로그램을 추가해도 SQL을 다시 고칠 필요 없음).
@@ -59,7 +59,9 @@ insert into public.program_registry (code, name, full_name, url, icon, color, so
  ('stos', '업무표준화·매뉴얼', 'Program for Process Standardization and Manual Creation',
           'https://sadness500-boop.github.io/Program-for-Process-Standardization-and-Manual-Creation/', 'assets/apps/stos.png', '#2F6FD0', 70, true, '업무표준·업무매뉴얼 제작'),
  ('stlr', '법률 대응 시스템', 'Legal Response System',
-          'https://sadness500-boop.github.io/S-Tec-Legal-Response-System/', 'assets/apps/stlr.png', '#1F3A73', 80, true, '부당 클레임·근무자 사안 법률 검토 Word·PPT·PDF')
+          'https://sadness500-boop.github.io/S-Tec-Legal-Response-System/', 'assets/apps/stlr.png', '#1F3A73', 80, true, '부당 클레임·근무자 사안 법률 검토 Word·PPT·PDF'),
+ ('stpp', '제안서 제작시스템', 'S-Tec Proposal Production System',
+          'https://sadness500-boop.github.io/S-Tec-Proposal-Production-System/', 'assets/apps/stpp.png', '#0E5C4A', 90, true, '견적 3종 연동 · 업종·산업별 제안서 Word·PPT·PDF')
 on conflict (code) do nothing;
 
 -- 2) 프로그램별 권한: 등록부에 있는 프로그램이면 모두 허용 ---------------------------------
