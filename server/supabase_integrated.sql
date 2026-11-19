@@ -45,23 +45,23 @@ create policy program_registry_read on public.program_registry for select
 
 insert into public.program_registry (code, name, full_name, url, icon, color, sort, uses_access, note) values
  ('ams',  '근태관리',        'Attendance Management Software',
-          'https://sadness500-boop.github.io/Attendance-Management-Software/', 'assets/apps/ams.png',  '#1B7A34', 10, false, '근무조 코드 기반 월 근태 자동 생성'),
+          'https://sadness500-boop.github.io/Attendance-Management-Software/', 'assets/apps/ams.png',  '#1B7A34', 20, false, '근무조 코드 기반 월 근태 자동 생성'),
  ('stso', '사업장 현황 지도', 'S-Tec-Business-Site-Overview',
-          'https://sadness500-boop.github.io/S-Tec-Business-Site-Overview/', 'assets/apps/stso.png', '#0E7C86', 20, true,  '사업장 위치·현황 지도'),
+          'https://sadness500-boop.github.io/S-Tec-Business-Site-Overview/', 'assets/apps/stso.png', '#0E7C86', 10, true,  '사업장 위치·현황 지도'),
  ('stqs', '용역인력 견적',    'S-Tec-Quotation-System',
-          'https://sadness500-boop.github.io/S-Tec-Quotation-System/', 'assets/apps/stqs.png', '#0B1F8A', 30, true,  '업종별 용역인력·부대비용 견적'),
+          'https://sadness500-boop.github.io/S-Tec-Quotation-System/', 'assets/apps/stqs.png', '#0B1F8A', 50, true,  '업종별 용역인력·부대비용 견적'),
  ('wbe',  '업무량 기반 산정', 'Workload-Based Cost and Labor Estimation Method',
-          'https://sadness500-boop.github.io/Workload-Based-Cost-and-Labor-Estimation-Method/', 'assets/apps/wbe.png', '#E8750A', 40, true, '업무량 기준 인력·비용 산정'),
+          'https://sadness500-boop.github.io/Workload-Based-Cost-and-Labor-Estimation-Method/', 'assets/apps/wbe.png', '#E8750A', 60, true, '업무량 기준 인력·비용 산정'),
  ('stse', '단기인력 견적',    'S-Tec short estimate',
-          'https://sadness500-boop.github.io/S-Ttec-short-estimate/', 'assets/apps/stse.png', '#7A2E8E', 50, true,  '단기·행사 인력 견적'),
+          'https://sadness500-boop.github.io/S-Ttec-short-estimate/', 'assets/apps/stse.png', '#7A2E8E', 70, true,  '단기·행사 인력 견적'),
  ('stcr', '고객 불만처리',    'S-Tec-Complaint-Response-System',
-          'https://sadness500-boop.github.io/S-Tec-Complaint-Response-System/', 'assets/apps/stcr.png', '#C0392B', 60, true, 'Complaint 대응방안 Word·PPT·PDF'),
+          'https://sadness500-boop.github.io/S-Tec-Complaint-Response-System/', 'assets/apps/stcr.png', '#C0392B', 30, true, 'Complaint 대응방안 Word·PPT·PDF'),
  ('stos', '업무표준화·매뉴얼', 'Program for Process Standardization and Manual Creation',
-          'https://sadness500-boop.github.io/Program-for-Process-Standardization-and-Manual-Creation/', 'assets/apps/stos.png', '#2F6FD0', 70, true, '업무표준·업무매뉴얼 제작'),
+          'https://sadness500-boop.github.io/Program-for-Process-Standardization-and-Manual-Creation/', 'assets/apps/stos.png', '#2F6FD0', 90, true, '업무표준·업무매뉴얼 제작'),
  ('stlr', '법률 대응 시스템', 'Legal Response System',
-          'https://sadness500-boop.github.io/S-Tec-Legal-Response-System/', 'assets/apps/stlr.png', '#1F3A73', 80, true, '부당 클레임·근무자 사안 법률 검토 Word·PPT·PDF'),
+          'https://sadness500-boop.github.io/S-Tec-Legal-Response-System/', 'assets/apps/stlr.png', '#1F3A73', 40, true, '부당 클레임·근무자 사안 법률 검토 Word·PPT·PDF'),
  ('stpp', '제안서 제작시스템', 'S-Tec Proposal Production System',
-          'https://sadness500-boop.github.io/S-Tec-Proposal-Production-System/', 'assets/apps/stpp.png', '#0E5C4A', 90, true, '견적 3종 연동 · 업종·산업별 제안서 Word·PPT·PDF')
+          'https://sadness500-boop.github.io/S-Tec-Proposal-Production-System/', 'assets/apps/stpp.png', '#0E5C4A', 80, true, '견적 3종 연동 · 업종·산업별 제안서 Word·PPT·PDF')
 on conflict (code) do nothing;
 
 -- 2) 프로그램별 권한: 등록부에 있는 프로그램이면 모두 허용 ---------------------------------
