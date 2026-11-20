@@ -84,7 +84,7 @@ Designed & Developed by Rat Rae Choi
 #### v1.8.1 (우수근무 영상)
 - Media Wall 영상 분류에 「우수근무 영상」 탭 추가(근무 영상과 Complaint 사례 사이)
 - 영상 5편: 근무중 도둑잡는 영상 · 근무중 화재소화 영상 · 화재현장 구조하는 영상 · 응급환자 CPR 영상 · 노약자 도와주는 영상 (`media/video/v31~v35.mp4`, 960×540 H.264)
-- 영상 합계 35편(근무 영상 17 · 우수근무 영상 5 · Complaint 사례 13)
+- 영상 합계 35편(근무 영상 18 · 우수근무 영상 5 · Complaint 사례 12)
 
 #### v1.8.0 (프로그램 11개)
 - 메인 화면 맨 아래 11번째 카드 「S-Tec Integrated Access Control System(통합 출입관리 시스템)」 추가 — `stac`, https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/ (sort 110)
