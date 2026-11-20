@@ -61,7 +61,9 @@ insert into public.program_registry (code, name, full_name, url, icon, color, so
  ('stlr', '법률 대응 시스템', 'Legal Response System',
           'https://sadness500-boop.github.io/S-Tec-Legal-Response-System/', 'assets/apps/stlr.png', '#1F3A73', 40, true, '부당 클레임·근무자 사안 법률 검토 Word·PPT·PDF'),
  ('stpp', '제안서 제작시스템', 'S-Tec Proposal Production System',
-          'https://sadness500-boop.github.io/S-Tec-Proposal-Production-System/', 'assets/apps/stpp.png', '#0E5C4A', 80, true, '견적 3종 연동 · 업종·산업별 제안서 Word·PPT·PDF')
+          'https://sadness500-boop.github.io/S-Tec-Proposal-Production-System/', 'assets/apps/stpp.png', '#0E5C4A', 80, true, '견적 3종 연동 · 업종·산업별 제안서 Word·PPT·PDF'),
+ ('stpm', '성과 관리 시스템', 'S-Tec Performance Management System',
+          'https://sadness500-boop.github.io/S-Tec-Performance-Management-System/', 'assets/apps/stpm.png', '#17552F', 100, true, '업종·산업별 일일·주간·월간·연간 성과 계수화 · 운영실태·품질점검')
 on conflict (code) do nothing;
 
 -- 2) 프로그램별 권한: 등록부에 있는 프로그램이면 모두 허용 ---------------------------------
