@@ -1,8 +1,8 @@
 # S-Tec Operations and Sales Integrated Management System
-### 에스텍 운영 및 영업 통합관리 시스템 · v1.7.0
+### 에스텍 운영 및 영업 통합관리 시스템 · v1.8.0
 
-하나의 아이디로 에스텍 10개 프로그램을 쓰는 **메인 프로그램**입니다.
-메인 화면에는 10개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
+하나의 아이디로 에스텍 11개 프로그램을 쓰는 **메인 프로그램**입니다.
+메인 화면에는 11개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
 
 | 순서 | 프로그램 (English) | 한글 | 저장소 |
 |---|---|---|---|
@@ -16,13 +16,14 @@
 | 8 | Legal Response System | 법률 대응 시스템 | S-Tec-Legal-Response-System |
 | 9 | S-Tec Proposal Production System | 제안서 제작시스템 | S-Tec-Proposal-Production-System |
 | 10 | S-Tec Performance Management System | 성과 관리 시스템 | S-Tec-Performance-Management-System |
+| 11 | S-Tec Integrated Access Control System | 통합 출입관리 시스템 | S-Tec-Integrated-Access-Control-System |
 
 - 웹 주소: https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/
 - 미리보기(데모 모드, 서버 연결 없음): 위 주소 끝에 `?demo=1` (일반 사용자 화면은 `?demo=1&as=user`)
 - 파일 하나로 여는 배포본: `releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.2.0.html`
 
 ### 기능
-- **통합 로그인** — 10개 프로그램과 같은 Supabase 서버·같은 아이디 · 가입 신청 · 비밀번호 찾기 · 임시 비밀번호 후 변경 강제
+- **통합 로그인** — 11개 프로그램과 같은 Supabase 서버·같은 아이디 · 가입 신청 · 비밀번호 찾기 · 임시 비밀번호 후 변경 강제
 - **메인 화면** — 담당 카드 · 다운로드 QR · 친구추천 · 주간/야간/시스템 테마 · 관리범위·사용기한·이 기기 · 프로그램 카드(권한별 표시)
 - **제작자 관리 콘솔**
   - 👥 사용자: 가입 승인 · 차단/해제 · 계정 사용기한 · 임시 비밀번호 · 강제 로그아웃 · 역할 · 메모 · 삭제 · 엑셀(CSV)
@@ -79,6 +80,11 @@ Designed & Developed by Rat Rae Choi
 - `vendor/stec-master.js` — 10개 프로그램이 함께 쓰는 기준정보 도구: 엑셀 양식 만들기 · 불러오기(미리보기·검사) · 지사·사업장·회사 목록에 더하기
 - 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
 - `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
+
+#### v1.8.0 (프로그램 11개)
+- 메인 화면 맨 아래 11번째 카드 「S-Tec Integrated Access Control System(통합 출입관리 시스템)」 추가 — `stac`, https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/ (sort 110)
+- 서버 등록부에도 추가: `server/supabase_integrated.sql`(다시 실행해도 안전) 또는 출입관리 저장소의 `server/supabase_stac.sql`(공유 출입 DATA 표 `ac_records` · 기존 장비 수신 `ac_ingest` 포함)
+- 공통 기준정보(`stec-master.js`) · 사용자 매뉴얼(`stec-guide.js`)에 통합 출입관리 시스템 반영 · 안내 문구 「11개 프로그램」
 
 #### v1.7.0 (프로그램 10개)
 - 메인 화면 맨 아래 10번째 카드 「S-Tec Performance Management System(에스텍 성과 관리 시스템)」 추가 — `stpm`, https://sadness500-boop.github.io/S-Tec-Performance-Management-System/ (sort 100)

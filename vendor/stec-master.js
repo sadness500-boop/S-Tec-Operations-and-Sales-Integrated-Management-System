@@ -100,7 +100,9 @@
     stlr: { en: 'S-Tec Legal Response System', ko: '법률 대응 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
       what: '사안이 발생한 고객사(사업장)와 담당 조직을 고를 수 있게 넣습니다.' },
     stpm: { en: 'S-Tec Performance Management System', ko: '성과 관리 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
-      what: '성과를 기록·집계할 사업장(고객사)과 담당 조직(지사 · 본부)을 고를 수 있게 넣습니다.' }
+      what: '성과를 기록·집계할 사업장(고객사)과 담당 조직(지사 · 본부)을 고를 수 있게 넣습니다.' },
+    stac: { en: 'S-Tec Integrated Access Control System', ko: '통합 출입관리 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
+      what: '출입관리를 운영할 사업장(고객사)과 담당 조직(지사)을 고를 수 있게 넣습니다.' }
   };
   function programSpec(code) {
     var p = PROGRAMS[code] || PROGRAMS.stim, sheets = [];
