@@ -489,7 +489,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.8.1';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -1405,7 +1405,7 @@ function editProgram(p){
    Designed & Developed by Rat Rae Choi
    ===================================================================== */
 const MW = { photos:[], videos:[], cat:'all', pi:-1, vi:-1, pl:0, vl:0, playing:true, timer:null, base:'media/', ready:false };
-const MW_CATS = [['all','전체'],['근무 영상','근무 영상'],['Complaint 사례','Complaint 사례']];
+const MW_CATS = [['all','전체'],['근무 영상','근무 영상'],['우수근무 영상','우수근무 영상'],['Complaint 사례','Complaint 사례']];
 async function mediaInit(){
   const rel = /^https?:/.test(location.protocol);
   const bases = rel ? ['media/', WEB_URL + 'media/'] : [WEB_URL + 'media/'];

@@ -1,5 +1,5 @@
 # S-Tec Operations and Sales Integrated Management System
-### 에스텍 운영 및 영업 통합관리 시스템 · v1.8.0
+### 에스텍 운영 및 영업 통합관리 시스템 · v1.8.1
 
 하나의 아이디로 에스텍 11개 프로그램을 쓰는 **메인 프로그램**입니다.
 메인 화면에는 11개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
@@ -80,6 +80,11 @@ Designed & Developed by Rat Rae Choi
 - `vendor/stec-master.js` — 10개 프로그램이 함께 쓰는 기준정보 도구: 엑셀 양식 만들기 · 불러오기(미리보기·검사) · 지사·사업장·회사 목록에 더하기
 - 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
 - `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
+
+#### v1.8.1 (우수근무 영상)
+- Media Wall 영상 분류에 「우수근무 영상」 탭 추가(근무 영상과 Complaint 사례 사이)
+- 영상 5편: 근무중 도둑잡는 영상 · 근무중 화재소화 영상 · 화재현장 구조하는 영상 · 응급환자 CPR 영상 · 노약자 도와주는 영상 (`media/video/v31~v35.mp4`, 960×540 H.264)
+- 영상 합계 35편(근무 영상 17 · 우수근무 영상 5 · Complaint 사례 13)
 
 #### v1.8.0 (프로그램 11개)
 - 메인 화면 맨 아래 11번째 카드 「S-Tec Integrated Access Control System(통합 출입관리 시스템)」 추가 — `stac`, https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/ (sort 110)
