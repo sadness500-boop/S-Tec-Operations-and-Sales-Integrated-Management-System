@@ -65,7 +65,7 @@ html[data-theme="dark"] .band{background:rgba(10,14,30,.72);border-bottom-color:
 html[data-theme="dark"] .band .ver{color:#9DB0FF;background:rgba(157,176,255,.12)}
 .band .acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 @media (min-width:761px){ .band-in{flex-wrap:nowrap} .band .ttl{flex:1 1 auto} .band .acts{flex:none;flex-wrap:nowrap} }
-@media (max-width:1440px) and (min-width:761px){ #btnMgr .tx,#btnQr .tx,#btnShare .tx{display:none} #btnMgr,#btnQr,#btnShare{padding:7px 10px} }
+@media (max-width:1440px) and (min-width:761px){ #btnQr .tx,#btnShare .tx{display:none} #btnQr,#btnShare{padding:7px 10px} }
 .chip{border:1px solid var(--line);background:var(--panel);color:var(--ink2);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:600;
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background .15s,border-color .15s,transform .15s}
 .chip:hover{border-color:#C8CFE2;background:var(--soft)}
@@ -425,7 +425,6 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
     <img class="appic" src="icons/icon-192.png" alt="S-Tec 운영·영업 통합관리시스템 아이콘">
     <div class="ttl"><b>S-Tec Operations and Sales Integrated Management System <span class="ver" id="verTag"></span></b><small>에스텍 운영 및 영업 통합관리 시스템</small></div>
     <div class="acts">
-      <button class="chip" id="btnMgr" title="담당 카드">👤 <span class="tx" id="mgrTx">담당 지정</span></button>
       <button class="chip" id="btnQr" title="다운로드 QR">📲 <span class="tx">다운로드 QR</span></button>
       <button class="chip" id="btnShare" title="친구추천">🤝 <span class="tx">친구추천</span></button>
       <span class="theme-seg zoom-seg" id="zoomSeg" title="프로그램 화면 크기 (Ctrl + 마우스 휠과 같음)"><button data-z="-" title="화면 줄이기">－</button><button data-z="0" id="zoomV" title="100%로">100%</button><button data-z="+" title="화면 키우기">＋</button></span>
@@ -510,7 +509,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -810,7 +809,7 @@ function renderHome(note){
   $('stDev').textContent = `${deviceName()} ✔ 승인`;
   $('acctTx').textContent = p.name || '내 계정';
   $('btnAdm').classList.toggle('hidden', !canConsole());
-  renderMgr(); orgHomeUi();
+  orgHomeUi();
 }
 
 async function loadPrograms(){
@@ -878,19 +877,6 @@ async function openProgram(code){
   try{ await Promise.race([SB.rpc('log_app_open', {p_app:code, p_device:deviceId(), p_device_name:deviceName()}), new Promise(r => setTimeout(r, 900))]); }catch(e){}
   location.href = pg.url;
 }
-
-/* ---------- 담당 카드 ---------- */
-function renderMgr(){ const m = jget(LS.mgr); $('mgrTx').textContent = m && m.name ? `담당: ${m.name}${m.branch ? ' (' + m.branch + ')' : ''}` : '담당 지정'; }
-$('btnMgr').onclick = () => {
-  const m = jget(LS.mgr) || {name:(PROFILE && PROFILE.name) || '', branch:'', phone:(PROFILE && PROFILE.phone) || ''};
-  pop(`<h3>👤 담당 카드</h3><p>이 기기에서 프로그램을 쓰는 담당자를 정합니다. 견적서·보고서의 담당자 표기와 화면 상단에 표시됩니다.</p>
-    <label class="p-f"><span>담당자 이름</span><input id="mN" value="${E(m.name)}"></label>
-    <label class="p-f"><span>소속 지사</span><select id="mB"><option value="">선택 안 함</option>${BRANCHES.map(b => `<option ${m.branch === b + '지사' ? 'selected' : ''}>${b}지사</option>`).join('')}</select></label>
-    <label class="p-f"><span>연락처</span><input id="mP" value="${E(m.phone)}"></label>
-    <div class="p-row"><button class="btn sec" id="mX">취소</button><button class="btn" id="mS">저장</button></div>`);
-  $('mX').onclick = closePop;
-  $('mS').onclick = () => { lsSet(LS.mgr, JSON.stringify({name:$('mN').value.trim(), branch:$('mB').value, phone:$('mP').value.trim()})); renderMgr(); closePop(); toast('담당 카드를 저장했습니다'); };
-};
 
 /* ---------- 다운로드 QR ---------- */
 function qrCanvas(text, size){
@@ -1048,7 +1034,8 @@ async function loadOrgs(){
 }
 
 /* ---------- 로그인 뒤: 내 조직 정보 ---------- */
-async function loadOrgInfo(){
+async function loadOrgInfo(){ try{ return await loadOrgInfo0(); } finally { window.dispatchEvent(new Event('stim-ready')); } }
+async function loadOrgInfo0(){
   ORGI = null;
   try{
     const {data, error} = await SB.rpc('my_org_info');
@@ -1059,10 +1046,11 @@ async function loadOrgInfo(){
   if(ORGI && ORGI.need_org) askMyOrg();
   return ORGI;
 }
+function conTitle(){ return isOwner() ? '제작자 관리 콘솔' : isAdmin() ? '관리자 관리콘솔' : '조직관리자 관리콘솔'; }
 function orgHomeUi(){
   const b = $('btnAdm'); if(!b) return;
   b.classList.toggle('hidden', !canConsole());
-  const t = b.querySelector('.btxt'); if(t) t.textContent = isAdmin() ? '제작자 관리 콘솔' : '조직 관리 콘솔';
+  const t = b.querySelector('.btxt'); if(t) t.textContent = conTitle();
   let badge = b.querySelector('.nb');
   const n = ORGI && ORGI.pending || 0;
   if(n && !badge){ badge = document.createElement('span'); badge.className = 'nb'; b.appendChild(badge); }
@@ -1360,7 +1348,7 @@ async function userOrg(u){
     <label class="p-f"><span>새 소속</span><select id="uoS">${orgOptions(u.org_id, {disable: o => o.kind === '그룹' || (lim && !orgUnder(o.id, lim))})}</select></label>
     <div class="p-row"><button class="btn sec" id="uoX">취소</button><button class="btn" id="uoV">저장</button></div>`);
   $('uoX').onclick = closePop;
-  $('uoV').onclick = async () => { closePop(); await orgUpd(u, 'org', $('uoS').value, '소속을 바꿨습니다'); };
+  $('uoV').onclick = async () => { const v = $('uoS').value; if(!v){ toast('새 소속을 고르세요'); return; } closePop(); await orgUpd(u, 'org', v, '소속을 바꿨습니다'); };
 }
 async function userScope(u){
   await ensureOrgs();
@@ -1431,13 +1419,18 @@ async function orgUpd(u, action, value, okMsg){
 
 /* ---------- 사용 안내 (프로그램 안 매뉴얼) ---------- */
 const GD = { doc: 'user', q: '' };
+const MANUAL_BASE = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/manuals/';
+const MANUAL_FILES = {
+  user: { docx: MANUAL_BASE + 'stec-user-manual.docx', pptx: MANUAL_BASE + 'stec-user-manual.pptx', name: '에스텍_통합관리시스템_사용자매뉴얼' },
+  admin: { docx: MANUAL_BASE + 'stec-admin-manual.docx', pptx: MANUAL_BASE + 'stec-admin-manual.pptx', name: '에스텍_통합관리시스템_제작자관리매뉴얼' }
+};
 function openGuide(doc){
   const G = window.STEC_GUIDE; if(!G){ toast('사용 안내를 불러오지 못했습니다'); return; }
-  const adm = typeof isAdmin === 'function' && isAdmin();
+  const adm = isOwner();   /* 제작자 관리매뉴얼은 제작자만 */
   GD.doc = (doc === 'admin' && adm) ? 'admin' : 'user'; GD.q = '';
   const g = $('guide'); g.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
   g.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>📘 사용 안내<small>에스텍 운영 및 영업 통합관리 시스템 v${E(APP_VERSION)}</small></h2>
-    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="gd-search" id="gdQ" type="search" placeholder="🔎 찾을 말 (예: 비밀번호)"><button class="chip" id="gdPr" title="지금 매뉴얼을 인쇄하거나 PDF로 저장">🖨️ 인쇄</button><button class="chip gr" id="gdX">✕ 닫기</button></div></div></div>
+    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="gd-search" id="gdQ" type="search" placeholder="🔎 찾을 말 (예: 비밀번호)"><button class="chip" id="gdPr" title="지금 매뉴얼을 인쇄하거나 PDF로 저장">🖨️ 인쇄</button><a class="chip" id="gdDW" target="_blank" rel="noopener" title="지금 매뉴얼을 Word 파일로 내려받기">⬇️ Word</a><a class="chip" id="gdDP" target="_blank" rel="noopener" title="지금 매뉴얼을 PPT 파일로 내려받기">⬇️ PPT</a><button class="chip gr" id="gdX">✕ 닫기</button></div></div></div>
     <div class="adm-tabs" id="gdTabs" style="max-width:1180px"><button data-d="user">👤 사용자 매뉴얼</button>${adm ? '<button data-d="admin">🛡️ 제작자 관리매뉴얼</button>' : ''}</div>
     <div id="gdBody"></div>
     <div class="adm-body" style="max-width:1180px"><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${E(APP_VERSION)}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
@@ -1450,6 +1443,7 @@ function closeGuide(){ const g = $('guide'); g.classList.add('hidden'); g.innerH
 function guideRender(){
   const G = window.STEC_GUIDE, d = G[GD.doc], q = GD.q.toLowerCase();
   $('gdTabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.d === GD.doc));
+  const MF = MANUAL_FILES[GD.doc]; [['gdDW','docx'],['gdDP','pptx']].forEach(([id, k]) => { const a = $(id); if(a){ a.href = MF[k]; a.setAttribute('download', MF.name + '.' + k); } });
   const hl = s => { const x = E(s); if(!q) return x; const re = new RegExp(E(GD.q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); return x.replace(re, m => `<mark class="gd-hit">${m}</mark>`); };
   const blk = b => b.p ? `<p>${hl(b.p)}</p>` : b.ul ? `<ul>${b.ul.map(i => `<li>${hl(i)}</li>`).join('')}</ul>` : b.ol ? `<ol>${b.ol.map(i => `<li>${hl(i)}</li>`).join('')}</ol>`
     : b.tip ? `<div class="gd-tip">💡 ${hl(b.tip)}</div>` : b.warn ? `<div class="gd-warn">⚠️ ${hl(b.warn)}</div>`
@@ -1536,8 +1530,8 @@ async function backupAll(){
 async function openAdmin(tab){
   if(!canConsole()){ toast('관리자만 열 수 있습니다'); return; }
   const a = $('adm'), tabs = consoleTabs(); if(!tabs.some(t => t[0] === tab)) tab = 'users'; a.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
-  a.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>${isAdmin() ? '🛡️ 제작자 관리 콘솔' : '🧑‍💼 조직 관리 콘솔'}<small>${E(PROFILE.name || PROFILE.email)} · ${isAdmin() ? E(ROLE_KO[PROFILE.role]) + ' — 11개 프로그램 통합 관리' : '조직 관리자 — ' + E((ORGI.manager.labels || []).join(', '))}</small></h2>
-    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="zoomer" title="관리 화면 크기 (Ctrl + 마우스 휠과 같음)"><button id="azOut" title="줄이기">－</button><button class="zv" id="azV" title="100%로">100%</button><button id="azIn" title="키우기">＋</button><button id="azFit" title="표 전체가 한 화면에 보이도록">↔ 맞춤</button><button id="azWide" title="화면 너비 끝까지 넓게">⇔ 넓게</button></span>${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}${isAdmin() ? '<button class="chip" id="admGd" title="제작자 관리매뉴얼">📘 매뉴얼</button>' : ''}<button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
+  a.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>${isOwner() ? '🛡️ ' : isAdmin() ? '🛡️ ' : '🧑‍💼 '}${conTitle()}<small>${E(PROFILE.name || PROFILE.email)} · ${isAdmin() ? E(ROLE_KO[PROFILE.role]) + ' — 11개 프로그램 통합 관리' : '조직 관리자 — ' + E((ORGI.manager.labels || []).join(', '))}</small></h2>
+    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="zoomer" title="관리 화면 크기 (Ctrl + 마우스 휠과 같음)"><button id="azOut" title="줄이기">－</button><button class="zv" id="azV" title="100%로">100%</button><button id="azIn" title="키우기">＋</button><button id="azFit" title="표 전체가 한 화면에 보이도록">↔ 맞춤</button><button id="azWide" title="화면 너비 끝까지 넓게">⇔ 넓게</button></span>${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}${isOwner() ? '<button class="chip" id="admGd" title="제작자 관리매뉴얼">📘 매뉴얼</button>' : ''}<button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
     <div class="adm-tabs" id="admTabs">${tabs.map(t => `<button data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
     <div class="adm-body"><div class="adm-card" id="admBody"></div><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${APP_VERSION}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
   $('admX').onclick = closeAdmin; admZoomInit();
@@ -1640,7 +1634,7 @@ async function userAction(u, a){
       <div class="p-row"><button class="btn sec" id="exX">취소</button><button class="btn" id="exS">저장</button></div>`);
     document.querySelectorAll('#popBox .seg label').forEach(l => l.onclick = () => { const d = +l.dataset.d; if(!d){ $('exD').value = ''; return; }
       const base = u.expires_at && u.expires_at > todayKST() ? u.expires_at : todayKST(); const t = new Date(base + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + d); $('exD').value = t.toISOString().slice(0,10); });
-    $('exX').onclick = closePop; $('exS').onclick = async () => { closePop(); await upd(u, 'expires', $('exD').value || '', '사용기한을 저장했습니다'); };
+    $('exX').onclick = closePop; $('exS').onclick = async () => { const v = $('exD').value || ''; closePop(); await upd(u, 'expires', v, '사용기한을 저장했습니다'); };
     return;
   }
   if(a === 'memo'){
@@ -2038,7 +2032,23 @@ const startUp = () => {
   try{ pageZoomInit(); }catch(e){} boot(); checkVersion(); mediaInit(); };
 if(DEMO && !window.STIM_DEMO){ const s = document.createElement('script'); s.src = 'demo.js'; s.onload = startUp; s.onerror = () => viewBlocked('server', {detail:'demo.js 를 불러오지 못했습니다'}); document.head.appendChild(s); }
 else startUp();
+/* ---------- 공통 상단 버튼 (stec-bar) — 메인 · 11개 프로그램 같은 모양 ---------- */
+window.STEC_BAR_CFG = { app: 'stim', into: '.band .acts', zoomKey: PZ_KEY, noZoomInit: true,
+  hide: ['#btnQr', '#btnShare', '#zoomSeg', '#themeSeg', '#btnAdm', '#btnAcct'],
+  qr: '#btnQr', share: '#btnShare', acct: '#btnAcct', theme: { attr: 'data-t', scope: '#themeSeg' },
+  hooks: { profile: () => PROFILE, client: () => SB, manual: () => openGuide('user'), console: () => openAdmin('users'),
+    zoom: z => { if($('zoomV')) $('zoomV').textContent = Math.round(z * 100) + '%'; }, saved: () => { try{ checkin('resume'); }catch(e){} } } };
+/* 다른 프로그램에서 「관리 콘솔」 · 「사용자 매뉴얼」로 들어온 경우 (?open=console | guide) */
+const OPEN_Q = (() => { try{ return new URLSearchParams(location.search).get('open') || ''; }catch(e){ return ''; } })();
+let openDone = false;
+window.addEventListener('stim-ready', () => {
+  if(openDone || !OPEN_Q) return; openDone = true;
+  try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  if(OPEN_Q === 'console') setTimeout(() => { if(canConsole()) openAdmin('users'); else toast('관리 콘솔은 제작자와 조직 관리자만 씁니다'); }, 300);
+  else if(OPEN_Q === 'guide') openGuide('user');
+});
 })();
 </script>
+<script src="vendor/stec-bar.js"></script>
 </body>
 </html>

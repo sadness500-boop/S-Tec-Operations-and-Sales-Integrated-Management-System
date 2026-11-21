@@ -6,7 +6,7 @@ R = pathlib.Path(__file__).resolve().parent
 ver = json.loads((R / 'version.json').read_text(encoding='utf-8'))['version']
 s = (R / 'index.html').read_text(encoding='utf-8')
 assert f"APP_VERSION = '{ver}'" in s, 'index.html 의 APP_VERSION 과 version.json 이 다릅니다'
-for js in ['vendor/supabase.js', 'vendor/qr.js']:
+for js in ['vendor/supabase.js', 'vendor/qr.js', 'vendor/stec-bar.js']:
     code = (R / js).read_text(encoding='utf-8').replace('</script', '<\\/script')
     s = s.replace(f'<script src="{js}"></script>', f'<script>/* {js} */\n{code}\n</script>')
 # 전체 백업 도구도 파일 안에 넣음 (관리 콘솔 「💾 전체 백업」이 인터넷 주소 없이도 동작)
