@@ -21,9 +21,9 @@ s = s.replace('<script src="vendor/stec-guide.js"></script>', '<script data-src=
 def datauri(m):
     p = R / m.group(2)
     if not p.exists(): return m.group(0)
-    mime = {'.png':'image/png', '.webp':'image/webp', '.gif':'image/gif', '.woff2':'font/woff2'}.get(p.suffix, 'image/jpeg')
+    mime = {'.png':'image/png', '.webp':'image/webp', '.gif':'image/gif', '.mp4':'video/mp4', '.woff2':'font/woff2'}.get(p.suffix, 'image/jpeg')
     return m.group(1) + f'data:{mime};base64,' + base64.b64encode(p.read_bytes()).decode()
-s = re.sub(r'''((?:src=|href=)["']|['"])((?:assets|icons)/[\w./-]+\.(?:png|jpg|gif|webp|woff2))''', datauri, s)
+s = re.sub(r'''((?:src=|href=)["']|['"])((?:assets|icons)/[\w./-]+\.(?:png|jpg|gif|webp|mp4|woff2))''', datauri, s)
 out = R / 'releases' / f'S-Tec-Operations-and-Sales-Integrated-Management-System_v{ver}.html'
 out.write_text(s, encoding='utf-8')
 print(out, round(out.stat().st_size / 1024), 'KB')
