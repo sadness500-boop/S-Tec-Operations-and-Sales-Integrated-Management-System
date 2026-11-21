@@ -224,7 +224,16 @@ Object.assign(RPC, {
   org_list_logs: () => { const m = me(); if(!(mgrOf(m) && mgrOf(m).perms.logs)) return fail('권한이 없습니다'); return ok(LOGS.filter(l => l.user_id && can(U.find(u => u.id === l.user_id), 'logs'))); }
 });
 
+/* 제작자 전용 보관함(owner-docs) 흉내 — 서버처럼 제작자(owner)에게만 내려줍니다 */
+const OWNER_DOCS = {
+  'index.json': JSON.stringify([{app:'stim', path:'stim/stec-admin-manual.docx', name:'에스텍_통합관리시스템_제작자관리매뉴얼.docx'},
+    {app:'ams', path:'ams/admin-manual-v2.20.0.docx', name:'에스텍_근태관리시스템_제작자관리매뉴얼_v2.20.0.docx'}]),
+  'stim/admin-guide.json': JSON.stringify({id:'admin', title:'제작자 관리매뉴얼', en:'Administrator Guide', sub:'(체험용 예시)', audience:'제작자', sections:[{h:'체험용 예시', key:['실제 내용은 서버 비공개 보관함'], blocks:[{p:'체험용 화면에서는 예시 내용만 보입니다.'}]}]}),
+  'stim/stec-admin-manual.docx': 'demo', 'ams/admin-manual-v2.20.0.docx': 'demo' };
+const storage = { from: () => ({ download: async path => me().role !== 'owner' ? {data:null, error:{message:'Object not found'}} :
+  (OWNER_DOCS[path] != null ? {data:new Blob([OWNER_DOCS[path]]), error:null} : {data:null, error:{message:'Object not found'}}) }) };
 window.STIM_DEMO = { client: () => ({
+  storage,
   rpc: (name, args) => RPC[name] ? RPC[name](args || {}) : fail('Could not find the function ' + name),
   auth: {
     getSession: () => Promise.resolve({data:{session}}),

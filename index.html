@@ -509,7 +509,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '1.9.2';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -1422,20 +1422,29 @@ const GD = { doc: 'user', q: '' };
 const MANUAL_BASE = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/manuals/';
 const MANUAL_FILES = {
   user: { docx: MANUAL_BASE + 'stec-user-manual.docx', pptx: MANUAL_BASE + 'stec-user-manual.pptx', name: '에스텍_통합관리시스템_사용자매뉴얼' },
-  admin: { docx: MANUAL_BASE + 'stec-admin-manual.docx', pptx: MANUAL_BASE + 'stec-admin-manual.pptx', name: '에스텍_통합관리시스템_제작자관리매뉴얼' }
+  /* 제작자 관리매뉴얼: 공개 주소에 두지 않고 서버의 제작자 전용 보관함(owner-docs)에서 제작자에게만 */
+  admin: { owner: true, docx: 'stim/stec-admin-manual.docx', pptx: 'stim/stec-admin-manual.pptx', json: 'stim/admin-guide.json', name: '에스텍_통합관리시스템_제작자관리매뉴얼' }
 };
-function openGuide(doc){
+async function loadAdminGuide(){
+  const G = window.STEC_GUIDE; if(G.admin) return true;
+  if(!isOwner()){ toast('제작자 관리매뉴얼은 제작자만 볼 수 있습니다'); return false; }
+  try{ G.admin = await window.STEC_BAR.ownerJson(MANUAL_FILES.admin.json); return true; }
+  catch(e){ toast('제작자 관리매뉴얼을 불러오지 못했습니다: ' + (e.message || e)); return false; }
+}
+async function openGuide(doc){
   const G = window.STEC_GUIDE; if(!G){ toast('사용 안내를 불러오지 못했습니다'); return; }
+  if(doc === 'admin' && !(await loadAdminGuide())) doc = 'user';
   const adm = isOwner();   /* 제작자 관리매뉴얼은 제작자만 */
   GD.doc = (doc === 'admin' && adm) ? 'admin' : 'user'; GD.q = '';
   const g = $('guide'); g.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
   g.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>📘 사용 안내<small>에스텍 운영 및 영업 통합관리 시스템 v${E(APP_VERSION)}</small></h2>
     <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="gd-search" id="gdQ" type="search" placeholder="🔎 찾을 말 (예: 비밀번호)"><button class="chip" id="gdPr" title="지금 매뉴얼을 인쇄하거나 PDF로 저장">🖨️ 인쇄</button><a class="chip" id="gdDW" target="_blank" rel="noopener" title="지금 매뉴얼을 Word 파일로 내려받기">⬇️ Word</a><a class="chip" id="gdDP" target="_blank" rel="noopener" title="지금 매뉴얼을 PPT 파일로 내려받기">⬇️ PPT</a><button class="chip gr" id="gdX">✕ 닫기</button></div></div></div>
-    <div class="adm-tabs" id="gdTabs" style="max-width:1180px"><button data-d="user">👤 사용자 매뉴얼</button>${adm ? '<button data-d="admin">🛡️ 제작자 관리매뉴얼</button>' : ''}</div>
+    <div class="adm-tabs" id="gdTabs" style="max-width:1180px"><button data-d="user">👤 사용자 매뉴얼</button>${adm ? '<button data-d="admin">🛡️ 제작자 관리매뉴얼</button><button id="gdOd" title="메인 · 11개 프로그램의 제작자 관리매뉴얼 파일 (제작자만)">📂 프로그램별 제작자 관리매뉴얼</button>' : ''}</div>
     <div id="gdBody"></div>
     <div class="adm-body" style="max-width:1180px"><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${E(APP_VERSION)}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
   $('gdX').onclick = closeGuide; $('gdPr').onclick = () => window.print();
-  $('gdTabs').querySelectorAll('button').forEach(b => b.onclick = () => { GD.doc = b.dataset.d; guideRender(); g.scrollTop = 0; });
+  $('gdTabs').querySelectorAll('button[data-d]').forEach(b => b.onclick = async () => { if(b.dataset.d === 'admin' && !(await loadAdminGuide())) return; GD.doc = b.dataset.d; guideRender(); g.scrollTop = 0; });
+  if($('gdOd')) $('gdOd').onclick = () => window.STEC_BAR.ownerDocs('all');
   let t; $('gdQ').oninput = e => { clearTimeout(t); t = setTimeout(() => { GD.q = e.target.value.trim(); guideRender(); }, 200); };
   guideRender(); g.scrollTop = 0;
 }
@@ -1443,7 +1452,9 @@ function closeGuide(){ const g = $('guide'); g.classList.add('hidden'); g.innerH
 function guideRender(){
   const G = window.STEC_GUIDE, d = G[GD.doc], q = GD.q.toLowerCase();
   $('gdTabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.d === GD.doc));
-  const MF = MANUAL_FILES[GD.doc]; [['gdDW','docx'],['gdDP','pptx']].forEach(([id, k]) => { const a = $(id); if(a){ a.href = MF[k]; a.setAttribute('download', MF.name + '.' + k); } });
+  const MF = MANUAL_FILES[GD.doc]; [['gdDW','docx'],['gdDP','pptx']].forEach(([id, k]) => { const a = $(id); if(!a) return;
+    if(MF.owner){ a.removeAttribute('href'); a.removeAttribute('download'); a.onclick = e => { e.preventDefault(); window.STEC_BAR.ownerSave(MF[k], MF.name + '.' + k); }; }
+    else { a.href = MF[k]; a.setAttribute('download', MF.name + '.' + k); a.onclick = null; } });
   const hl = s => { const x = E(s); if(!q) return x; const re = new RegExp(E(GD.q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); return x.replace(re, m => `<mark class="gd-hit">${m}</mark>`); };
   const blk = b => b.p ? `<p>${hl(b.p)}</p>` : b.ul ? `<ul>${b.ul.map(i => `<li>${hl(i)}</li>`).join('')}</ul>` : b.ol ? `<ol>${b.ol.map(i => `<li>${hl(i)}</li>`).join('')}</ol>`
     : b.tip ? `<div class="gd-tip">💡 ${hl(b.tip)}</div>` : b.warn ? `<div class="gd-warn">⚠️ ${hl(b.warn)}</div>`
