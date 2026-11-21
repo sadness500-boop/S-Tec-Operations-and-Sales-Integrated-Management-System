@@ -509,7 +509,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.9.2';
+const APP_VERSION = '1.9.3';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -2047,6 +2047,8 @@ else startUp();
 window.STEC_BAR_CFG = { app: 'stim', into: '.band .acts', zoomKey: PZ_KEY, noZoomInit: true,
   hide: ['#btnQr', '#btnShare', '#zoomSeg', '#themeSeg', '#btnAdm', '#btnAcct'],
   qr: '#btnQr', share: '#btnShare', acct: '#btnAcct', theme: { attr: 'data-t', scope: '#themeSeg' },
+  head: { el: 'header.band', into: '.band .band-in', hide: ['.band .appic', '.band .ttl'], iconFrom: '.band .appic', en: 'S-Tec Operations and Sales Integrated Management System', ko: '에스텍 운영 및 영업 통합관리 시스템' },
+  foot: { hide: ['main.wrap > .foot-sign'], after: 'main.wrap > .foot-sign', move: ['#guideLink'] },
   hooks: { profile: () => PROFILE, client: () => SB, manual: () => openGuide('user'), console: () => openAdmin('users'),
     zoom: z => { if($('zoomV')) $('zoomV').textContent = Math.round(z * 100) + '%'; }, saved: () => { try{ checkin('resume'); }catch(e){} } } };
 /* 다른 프로그램에서 「관리 콘솔」 · 「사용자 매뉴얼」로 들어온 경우 (?open=console | guide) */
