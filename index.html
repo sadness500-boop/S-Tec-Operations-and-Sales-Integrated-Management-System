@@ -106,12 +106,12 @@ html[data-theme="dark"] .eyebrow{color:#B8C6FF;background:rgba(255,255,255,.06);
 html[data-theme="dark"] .hero h1 em{background-image:linear-gradient(90deg,#4CD07A,#8FA4FF)}
 .hero .meta{font-size:14.5px;color:var(--mute);max-width:440px}
 .hero-art{margin:0;position:relative;min-height:340px;display:flex;align-items:center;justify-content:center;padding:18px 26px 18px 4px}
-/* 움직이는 디오라마(영상 1280×956, 원본 GIF 2400×1792에서 변환) — 가장자리는 배경으로 부드럽게 스며들게 */
+/* 움직이는 디오라마(영상 1920×1080, 원본 GIF 640×360을 AI 초해상도(EDSR ×3)로 키움) — 가장자리는 배경으로 부드럽게 스며들게 */
 .dio{position:relative;width:100%;max-width:700px;isolation:isolate}
 .dio::before{content:"";position:absolute;inset:-8% -8% -4%;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse 60% 56% at 50% 50%,rgba(255,226,186,.30),rgba(255,226,186,.10) 55%,transparent 76%)}
 html[data-theme="dark"] .dio::before{background:radial-gradient(ellipse 60% 56% at 50% 50%,rgba(255,214,160,.16),rgba(120,140,255,.07) 55%,transparent 76%)}
-.dio video,.dio img{display:block;width:100%;height:auto;aspect-ratio:1280/956;object-fit:cover;background:transparent;
+.dio video,.dio img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;background:transparent;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%),linear-gradient(180deg,transparent 0,#000 8%,#000 94%,transparent 100%);
   -webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%),linear-gradient(180deg,transparent 0,#000 8%,#000 94%,transparent 100%);mask-composite:intersect}
 html[data-theme="dark"] .dio video{filter:brightness(.95)}
@@ -509,7 +509,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.9.9';
+const APP_VERSION = '1.9.10';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
