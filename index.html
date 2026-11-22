@@ -509,7 +509,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.9.6';
+const APP_VERSION = '1.9.7';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -536,7 +536,11 @@ const BUILTIN = [
   {code:'stpp', name:'제안서 제작시스템',  full_name:'S-Tec Proposal Production System', url:'https://sadness500-boop.github.io/S-Tec-Proposal-Production-System/', icon:'assets/apps/stpp.png', color:'#0E5C4A', sort:80, uses_access:true, note:'견적 3종 연동 · 업종·산업별 제안서 Word·PPT·PDF'},
   {code:'stos', name:'업무표준화·매뉴얼',  full_name:'Program for Process Standardization and Manual Creation', url:'https://sadness500-boop.github.io/Program-for-Process-Standardization-and-Manual-Creation/', icon:'assets/apps/stos.png', color:'#2F6FD0', sort:90, uses_access:true, note:'업무표준·업무매뉴얼 제작'},
   {code:'stpm', name:'성과 관리 시스템',  full_name:'S-Tec Performance Management System', url:'https://sadness500-boop.github.io/S-Tec-Performance-Management-System/', icon:'assets/apps/stpm.png', color:'#17552F', sort:100, uses_access:true, note:'업종·산업별 일일·주간·월간·연간 성과 계수화 · 운영실태·품질점검'},
-  {code:'stac', name:'통합 출입관리 시스템', full_name:'S-Tec Integrated Access Control System', url:'https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/', icon:'assets/apps/stac.png', color:'#0C2350', sort:110, uses_access:true, note:'방문자 · 방문차량 출입 등록 · 초성 · 번호판 · 업체 통합 검색 · 누적 DATA'}
+  {code:'stac', name:'통합 출입관리 시스템', full_name:'S-Tec Integrated Access Control System', url:'https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/', icon:'assets/apps/stac.png', color:'#0C2350', sort:110, uses_access:true, note:'방문자 · 방문차량 출입 등록 · 초성 · 번호판 · 업체 통합 검색 · 누적 DATA'},
+  /* v1.9.7: 「함께 쓰는 사이트」 3개를 하단 섹션 대신 메인 프로그램 카드로 (로그인 없이 쓰는 공개 사이트 — 승인된 계정 모두) */
+  {code:'ppopgi', name:'오늘의 뽑기판', full_name:'', url:'https://sadness500-boop.github.io/ppopgi/', icon:'https://sadness500-boop.github.io/ppopgi/icons/icon-192.png', color:'#E0452B', sort:120, uses_access:false, note:'모임용 뽑기·사다리·미니게임'},
+  {code:'matgil', name:'팔도 제철맛길', full_name:'', url:'https://sadness500-boop.github.io/jecheolmatgil/', icon:'https://sadness500-boop.github.io/jecheolmatgil/icons/icon-192.png', color:'#17552F', sort:130, uses_access:false, note:'달마다 제철 음식과 지역 맛집 지도'},
+  {code:'festa', name:'팔도 축제길', full_name:'', url:'https://sadness500-boop.github.io/Festival/', icon:'https://sadness500-boop.github.io/Festival/icons/icon-192.png', color:'#1F4E79', sort:140, uses_access:false, note:'전국 지역·계절·월별 축제 지도'},
 ];
 const BRANCHES = ['동부','서부','남부','중부'];
 try{ if(window.StecMaster) StecMaster.branchKeys(BRANCHES); }catch(e){}
