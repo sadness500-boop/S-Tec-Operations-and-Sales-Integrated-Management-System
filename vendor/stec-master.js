@@ -9,7 +9,7 @@
   var MAIN = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
   var SB_URL = 'https://mnsuebexlzhvomxhrear.supabase.co', SB_KEY = 'sb_publishable_QAD9rHyR_zI8Oyl30VuXqw_tDof_Ctx';
   var CACHE = 'stec_master_v1';
-  var ORG_TYPES = ['본부', '지역본부', '지사', '지점', '사업소', '영업소', '센터', '팀', '기타'];
+  var ORG_TYPES = ['부문', '사업부', '본부', '지역본부', '지사', '지점', '사업소', '영업소', '센터', '팀', '기타'];
   var PALETTE = ['#0E7490', '#B45309', '#7C3AED', '#BE123C', '#15803D', '#1D4ED8', '#A16207', '#9D174D', '#0F766E', '#4338CA', '#C2410C', '#4D7C0F'];
 
   /* ---------------- 양식 항목 정의 (엑셀 · PDF 공통) ---------------- */
@@ -101,6 +101,8 @@
       what: '사안이 발생한 고객사(사업장)와 담당 조직을 고를 수 있게 넣습니다.' },
     stpm: { en: 'S-Tec Performance Management System', ko: '성과 관리 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
       what: '성과를 기록·집계할 사업장(고객사)과 담당 조직(지사 · 본부)을 고를 수 있게 넣습니다.' },
+    stpp: { en: 'S-Tec Proposal Production System', ko: '제안서 제작시스템', uses: { companies: ['name', 'full', 'ceo', 'bizNo', 'corpNo', 'bizType', 'bizItem', 'lic', 'addr', 'tel', 'fax', 'email', 'note'], orgs: null, sites: SITE_MAP },
+      what: '제안서 「회사 소개」의 회사 정보와 제안 대상 고객사(사업장) · 담당 조직을 고를 수 있게 넣습니다.' },
     stac: { en: 'S-Tec Integrated Access Control System', ko: '통합 출입관리 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
       what: '출입관리를 운영할 사업장(고객사)과 담당 조직(지사)을 고를 수 있게 넣습니다.' }
   };

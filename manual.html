@@ -45,6 +45,7 @@ mark{background:#ffe58a}
   <input id="q" type="search" placeholder="🔎 찾을 말 (예: 비밀번호)">
   <a class="dl" id="dW" target="_blank" rel="noopener">⬇️ Word</a>
   <a class="dl" id="dP" target="_blank" rel="noopener">⬇️ PPT</a>
+  <a class="dl" id="dF" target="_blank" rel="noopener">⬇️ PDF</a>
   <button id="pr" type="button">🖨️ 인쇄</button>
 </header>
 <div class="wrap"><nav id="toc"></nav><main id="body"></main></div>
@@ -58,6 +59,7 @@ mark{background:#ffe58a}
   const dW = document.getElementById('dW'), dP = document.getElementById('dP');
   dW.href = B + 'stec-user-manual.docx'; dW.download = NAME + '.docx';
   dP.href = B + 'stec-user-manual.pptx'; dP.download = NAME + '.pptx';
+  const dF = document.getElementById('dF'); dF.href = B + 'stec-user-manual.pdf'; dF.download = NAME + '.pdf';
   document.getElementById('pr').onclick = () => window.print();
   const G = window.STEC_GUIDE, d = G && G.user;   /* 사용자 매뉴얼만 — 제작자 관리매뉴얼은 제작자 관리 콘솔에서 */
   const E = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
