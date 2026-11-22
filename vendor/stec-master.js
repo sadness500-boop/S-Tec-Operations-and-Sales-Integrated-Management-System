@@ -1,7 +1,7 @@
 /* =====================================================================
    S-Tec 공통 기준정보 · 자료 양식 / 불러오기  (stec-master.js)
-   — 회사 · 조직(본부 · 지사 · 지점 · 기타) · 사업장을 한 번 넣으면 9개 프로그램이 함께 씁니다.
-   — 프로그램마다 「📂 자료」 버튼: 입력 양식(엑셀) 받기 · 작성 안내서(PDF) · 엑셀 불러오기
+   — 회사 · 조직(본부 · 지사 · 지점 · 기타) · 사업장을 한 번 넣으면 12개 프로그램이 함께 씁니다.
+   — 프로그램마다 「📂 자료」 버튼: 입력 양식(엑셀) 받기 · 작성 안내서(PDF) · 엑셀 · PDF 불러오기
    S-Tec Operations and Sales Integrated Management System · Designed & Developed by Rat Rae Choi
    ===================================================================== */
 (function (root) {
@@ -10,6 +10,14 @@
   var SB_URL = 'https://mnsuebexlzhvomxhrear.supabase.co', SB_KEY = 'sb_publishable_QAD9rHyR_zI8Oyl30VuXqw_tDof_Ctx';
   var CACHE = 'stec_master_v1';
   var ORG_TYPES = ['부문', '사업부', '본부', '지역본부', '지사', '지점', '사업소', '영업소', '센터', '팀', '기타'];
+  /* 고르는 목록 — 목록에 없으면 칸에 직접 적어도 됩니다 */
+  var OPT = {
+    type: ['공장', '빌딩', '오피스', '병원', '대학교', '학교', '아파트', '물류센터', '관공서', '공공기관', '상가', '호텔', '연구소', '발전소', '기타'],
+    work: ['보안', '미화', '주차', '시설', '안내', '조리', '보안/미화', '보안/주차', '시설/미화', '시설/보안', '시설/보안/미화', '보안/미화/주차', '기타'],
+    shift: ['주간', '주5일', '격일제', '2조2교대', '3조2교대', '4조2교대', '4조3교대', '5조2교대', '야간고정', '주간/격일제', '주간/3조2교대', '주간/4조2교대', '주간/야간고정', '기타'],
+    to: (function () { var a = []; for (var i = 1; i <= 50; i++) a.push(i); return a; })()
+  };
+  var PICK = ' ▼ 목록에서 고르기(없으면 직접 입력)';
   var PALETTE = ['#0E7490', '#B45309', '#7C3AED', '#BE123C', '#15803D', '#1D4ED8', '#A16207', '#9D174D', '#0F766E', '#4338CA', '#C2410C', '#4D7C0F'];
 
   /* ---------------- 양식 항목 정의 (엑셀 · PDF 공통) ---------------- */
@@ -33,9 +41,9 @@
       { k: 'note', h: '메모', d: '', ex: '' }] },
     orgs: { sheet: '조직', title: '조직(본부 · 지사 · 지점 · 기타)', desc: '회사 아래의 본부 · 지사 · 지점 등. 프로그램의 「지사」 목록 · 담당 지사 · 지도 라벨로 쓰입니다.', cols: [
       { k: 'name', h: '조직명 *', d: '전체 이름', ex: '울산지점' },
-      { k: 'type', h: '구분(회사·본부·지사·지점 등)', d: '본부 · 지역본부 · 지사 · 지점 · 사업소 · 영업소 · 센터 · 팀 · 기타 (「회사」로 적으면 회사로 등록)', ex: '지점', t: 'list', list: ['회사'].concat(ORG_TYPES) },
+      { k: 'type', h: '구분(회사·본부·지사·지점 등)', d: '본부 · 지사 · 지점 · 센터 등' + PICK, ex: '지사', t: 'pick', list: ['회사'].concat(ORG_TYPES) },
       { k: 'parent', h: '상위 조직명', d: '바로 위 조직(본부 등) 또는 회사명', ex: '영남본부' },
-      { k: 'company', h: '회사명 *', d: '「회사」 시트의 회사명(에스텍베스트 포함)', ex: '에스텍플러스' },
+      { k: 'company', h: '회사명 *', d: '소속 회사' + PICK, ex: '에스텍플러스', t: 'pick', ref: 'co' },
       { k: 'key', h: '약칭(프로그램 표시용)', d: '목록 · 버튼에 나오는 짧은 이름. 비우면 조직명에서 「지사·지점」을 뺀 이름. 다른 조직과 겹치면 안 됨', ex: '울산' },
       { k: 'addr', h: '주소', d: '사무실 주소', ex: '울산시 남구 삼산로 000' },
       { k: 'head', h: '책임자', d: '지사장 · 지점장 등', ex: '김철수' },
@@ -47,12 +55,12 @@
       { k: 'note', h: '메모', d: '', ex: '' }] },
     sites: { sheet: '사업장', title: '사업장(고객사 현장)', desc: '용역을 수행하는 고객사 현장. 사업장 지도 · 견적 · 불만처리 · 법률 대응 · 근태관리에서 쓰입니다.', cols: [
       { k: 'name', h: '사업장명 *', d: '고객사(현장) 이름', ex: '○○화학 울산공장' },
-      { k: 'org', h: '소속 조직명', d: '담당 조직(「조직」 시트의 조직명 또는 약칭)', ex: '울산지점' },
-      { k: 'type', h: '형태(공장·대학·빌딩 등)', d: '공장 · 대학 · 빌딩 · 병원 · 아파트 · 관공서 · 기타', ex: '공장' },
-      { k: 'work', h: '업무(보안·미화 등)', d: '보안 · 미화 · 보안/미화 · 시설 · 주차 등', ex: '보안/미화' },
-      { k: 'shift', h: '근무형태(주5일·3조2교대 등)', d: '격일제 · 3조2교대 · 주5일 등', ex: '3조2교대' },
-      { k: 'to', h: '계약 T/O', d: '계약 인원', ex: 6, t: 'num' },
-      { k: 'company', h: '회사명', d: '계약 회사(비우면 소속 조직의 회사)', ex: '에스텍플러스' },
+      { k: 'org', h: '소속 조직명', d: '담당 지사 · 지점' + PICK, ex: '동부지사', t: 'pick', ref: 'org' },
+      { k: 'type', h: '형태(공장·대학·빌딩 등)', d: '사업장 형태' + PICK, ex: '공장', t: 'pick', list: OPT.type },
+      { k: 'work', h: '업무(보안·미화 등)', d: '맡은 업무' + PICK, ex: '보안/미화', t: 'pick', list: OPT.work },
+      { k: 'shift', h: '근무형태(주5일·3조2교대 등)', d: '근무 형태' + PICK, ex: '3조2교대', t: 'pick', list: OPT.shift },
+      { k: 'to', h: '계약 T/O', d: '계약 인원(명)' + PICK, ex: 6, t: 'pick', num: true, list: OPT.to },
+      { k: 'company', h: '회사명', d: '계약 회사(비우면 소속 조직의 회사)' + PICK, ex: '에스텍플러스', t: 'pick', ref: 'co' },
       { k: 'addr', h: '주소', d: '현장 주소(지도 · 거리 계산)', ex: '울산시 남구 사평로 000' },
       { k: 'since', h: '계약 시작일', d: 'YYYY-MM-DD 또는 YYYY.MM.DD', ex: '2026-01-01', t: 'date' },
       { k: 'total', h: '현재 인원', d: '배치 인원 합계', ex: 6, t: 'num' },
@@ -65,12 +73,16 @@
   };
   var ALL = ['companies', 'orgs', 'sites'];
   function pick(kind, keys) { var s = C[kind]; return { sheet: s.sheet, title: s.title, desc: s.desc, cols: keys ? s.cols.filter(function (c) { return keys.indexOf(c.k) >= 0; }) : s.cols }; }
-  var CO_BASIC = ['name', 'full', 'ceo', 'addr', 'tel', 'lat', 'lng', 'note'];
-  var SITE_MAP = ['name', 'org', 'type', 'work', 'shift', 'to', 'company', 'addr', 'since', 'total', 'm', 'f', 'sec', 'cln', 'etc', 'mgr', 'pos', 'mtel', 'stel', 'lat', 'lng', 'note'];
+  /* v1.9.9: 꼭 필요한 칸만 — 회사 4칸 · 조직 3~5칸 · 사업장 7칸 (나머지 항목은 예전 양식으로 넣어도 그대로 읽음) */
+  var CO_BASIC = ['name', 'full', 'ceo', 'addr'];
+  var CO_DOC = ['name', 'full', 'ceo', 'bizNo', 'addr', 'tel'];          // 견적서 · 제안서 발행 회사
+  var ORG_BASIC = ['name', 'type', 'company', 'head', 'tel'];
+  var SITE_BASIC = ['name', 'org', 'type', 'work', 'shift', 'to', 'addr'];
+  var SITE_MAP = SITE_BASIC.concat(['lat', 'lng']);                       // 사업장 지도만 위도 · 경도(선택)
   var PROGRAMS = {
-    stim: { en: 'S-Tec Operations and Sales Integrated Management System', ko: '메인(통합관리)', uses: { companies: null, orgs: null, sites: null },
-      what: '메인 관리 콘솔 「🏢 기준정보」에서 9개 프로그램 공통 회사 · 조직 · 사업장을 한 번에 넣습니다.' },
-    ams: { en: 'Attendance Management Software', ko: '근태관리', uses: { orgs: ['name', 'type', 'parent', 'company', 'key', 'addr', 'head', 'tel'], sites: ['name', 'org', 'type', 'work', 'shift', 'to', 'company', 'addr'] }, own: true,
+    stim: { en: 'S-Tec Operations and Sales Integrated Management System', ko: '메인(통합관리)', uses: { companies: CO_DOC, orgs: ORG_BASIC, sites: SITE_BASIC },
+      what: '메인 관리 콘솔 「🏢 기준정보」에서 12개 프로그램 공통 회사 · 조직 · 사업장을 한 번에 넣습니다.' },
+    ams: { en: 'Attendance Management Software', ko: '근태관리', uses: { orgs: ['name', 'type', 'company'], sites: SITE_BASIC }, own: true,
       what: '조직 · 사업장 · 인원(근무조 · 근로형태 · 출퇴근 · 휴게) · 급여를 한 번에 등록합니다. 근태관리 「엑셀 자료 반영하기」와 같은 양식입니다.',
       extra: [{ sheet: '인원·급여', title: '인원 · 급여(근로계약서)', desc: '한 줄 = 한 사람. 사업장명 + 성명(또는 사번)으로 기존 인원을 찾아 바꾸고, 없으면 새로 추가합니다.', cols: [
         { k: 'site', h: '사업장명 *', d: '「사업장」 시트의 사업장명', ex: '○○화학 울산공장' }, { k: 'name', h: '성명 *', d: '', ex: '홍길동' },
@@ -85,25 +97,25 @@
         { k: 'memo', h: '메모', d: '', ex: '' }] },
         { sheet: '근무조 코드', title: '근무조 코드(참고)', desc: '근태관리에 등록된 근무조 코드 목록입니다. 「인원·급여」의 근무조 코드는 이 목록에서 고릅니다(읽기 전용).', ref: true, cols: [
         { k: 'id', h: '코드', d: '', ex: 'SEC-3J2G-01' }, { k: 'name', h: '이름', d: '', ex: '보안 3조2교대' }, { k: 'job', h: '직종', d: '', ex: '보안' }, { k: 'lt', h: '근로형태', d: '', ex: '감시단속' }] }] },
-    stso: { en: 'S-Tec-Business-Site-Overview', ko: '사업장 현황 지도', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
+    stso: { en: 'S-Tec-Business-Site-Overview', ko: '사업장 현황 지도', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_MAP },
       what: '새 회사 · 지사 · 사업장을 지도에 표시합니다. 위도 · 경도가 있으면 지도에 핀이 꽂힙니다.' },
-    stqs: { en: 'S-Tec-Quotation-System', ko: '용역인력 견적', uses: { companies: null, orgs: null, sites: ['name', 'org', 'company', 'addr', 'type', 'work', 'shift', 'to', 'total', 'lat', 'lng', 'note'] },
+    stqs: { en: 'S-Tec-Quotation-System', ko: '용역인력 견적', uses: { companies: CO_DOC, orgs: ORG_BASIC, sites: SITE_BASIC },
       what: '견적서 발행 회사(상호 · 대표 · 사업자번호 · 업태 · 종목 · 허가번호 · 주소)와 관할 조직 · 기존 사업장을 넣습니다.' },
-    wbe: { en: 'Workload-Based Cost and Labor Estimation Method', ko: '업무량 기반 산정', uses: { companies: CO_BASIC, orgs: null, sites: ['name', 'org', 'company', 'addr', 'type', 'work', 'shift', 'total', 'lat', 'lng'] },
+    wbe: { en: 'Workload-Based Cost and Labor Estimation Method', ko: '업무량 기반 산정', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
       what: '견적 대상 근처의 조직(관할 지사) · 기존 사업장을 지도에서 보여 줄 때 씁니다.' },
-    stse: { en: 'S-Tec short estimate', ko: '단기인력 견적', uses: { companies: ['name', 'full', 'ceo', 'bizNo', 'addr', 'tel', 'fax', 'email', 'note'], orgs: null },
+    stse: { en: 'S-Tec short estimate', ko: '단기인력 견적', uses: { companies: CO_DOC, orgs: ['name', 'type', 'company'] },
       what: '견적서 「발신 회사 정보」(상호 · 대표 · 사업자번호 · 주소 · 전화 · 팩스)를 회사 이름만 골라 채우고, 담당 조직(지사 · 지점) 목록에 씁니다.' },
-    stcr: { en: 'S-Tec Complaint Response System', ko: '고객 불만처리', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
+    stcr: { en: 'S-Tec Complaint Response System', ko: '고객 불만처리', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
       what: '불만이 들어온 고객사(사업장)와 담당 조직(책임자 · 연락처)을 고를 수 있게 넣습니다.' },
-    stos: { en: 'Program for Process Standardization and Manual Creation', ko: '업무표준화 · 매뉴얼', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
+    stos: { en: 'Program for Process Standardization and Manual Creation', ko: '업무표준화 · 매뉴얼', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
       what: '업무표준 · 매뉴얼을 만들 사업장(고객사)과 담당 조직(지사 · 지점 · 책임자)을 고를 수 있게 넣습니다.' },
-    stlr: { en: 'S-Tec Legal Response System', ko: '법률 대응 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
+    stlr: { en: 'S-Tec Legal Response System', ko: '법률 대응 시스템', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
       what: '사안이 발생한 고객사(사업장)와 담당 조직을 고를 수 있게 넣습니다.' },
-    stpm: { en: 'S-Tec Performance Management System', ko: '성과 관리 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
+    stpm: { en: 'S-Tec Performance Management System', ko: '성과 관리 시스템', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
       what: '성과를 기록·집계할 사업장(고객사)과 담당 조직(지사 · 본부)을 고를 수 있게 넣습니다.' },
-    stpp: { en: 'S-Tec Proposal Production System', ko: '제안서 제작시스템', uses: { companies: ['name', 'full', 'ceo', 'bizNo', 'corpNo', 'bizType', 'bizItem', 'lic', 'addr', 'tel', 'fax', 'email', 'note'], orgs: null, sites: SITE_MAP },
+    stpp: { en: 'S-Tec Proposal Production System', ko: '제안서 제작시스템', uses: { companies: CO_DOC, orgs: ['name', 'type', 'company'], sites: SITE_BASIC },
       what: '제안서 「회사 소개」의 회사 정보와 제안 대상 고객사(사업장) · 담당 조직을 고를 수 있게 넣습니다.' },
-    stac: { en: 'S-Tec Integrated Access Control System', ko: '통합 출입관리 시스템', uses: { companies: CO_BASIC, orgs: null, sites: SITE_MAP },
+    stac: { en: 'S-Tec Integrated Access Control System', ko: '통합 출입관리 시스템', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
       what: '출입관리를 운영할 사업장(고객사)과 담당 조직(지사)을 고를 수 있게 넣습니다.' }
   };
   function programSpec(code) {
@@ -187,6 +199,143 @@
     if (root.ExcelJS) return Promise.resolve(root.ExcelJS);
     return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = EXJ; s.onload = function () { res(root.ExcelJS); }; s.onerror = function () { rej(new Error('엑셀 도구를 불러오지 못했습니다(인터넷 연결 확인)')); }; document.head.appendChild(s); });
   }
+  /* ---------------- PDF 불러오기 — PDF 속 표(글자)를 읽어 엑셀과 같은 방식으로 반영 ---------------- */
+  var PDFJ = MAIN + 'vendor/pdf.min.js', PDFW = MAIN + 'vendor/pdf.worker.min.js';
+  function loadPdf() {
+    var set = function () { try { root.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFW; } catch (e) { } return root.pdfjsLib; };
+    if (root.pdfjsLib) return Promise.resolve(set());
+    return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = PDFJ; s.onload = function () { res(set()); }; s.onerror = function () { rej(new Error('PDF 도구를 불러오지 못했습니다(인터넷 연결 확인)')); }; document.head.appendChild(s); });
+  }
+  function pdfLines(lib, ab) {
+    return lib.getDocument({ data: new Uint8Array(ab) }).promise.then(function (doc) {
+      var pages = [], p = Promise.resolve();
+      for (var i = 1; i <= doc.numPages; i++) (function (n) { p = p.then(function () { return doc.getPage(n).then(function (pg) { return pg.getTextContent().then(function (tc) {
+        var items = tc.items.filter(function (t) { return t.str && t.str.trim(); }).map(function (t) { return { s: t.str.trim(), x: t.transform[4], y: t.transform[5], w: t.width || 0, h: Math.round(Math.abs(t.transform[3]) * 10) / 10, f: t.fontName || '' }; });
+        var H = (pg.view && pg.view[3]) || 842; items = items.filter(function (t) { return t.y > 25 && t.y < H - 25; });   // 머리말 · 꼬리말(쪽 번호 등) 제외
+        items.sort(function (a, b) { return b.y - a.y || a.x - b.x; });
+        var lines = [];
+        items.forEach(function (t) { var L = null; for (var q = lines.length - 1; q >= 0 && q >= lines.length - 4; q--) if (Math.abs(lines[q].y - t.y) <= 3 && Math.abs(lines[q].h - t.h) < 0.8) { L = lines[q]; break; } if (L) L.items.push(t); else lines.push({ y: t.y, h: t.h, items: [t] }); });   // 글자 크기가 다르면(설명 줄 등) 다른 줄
+        lines.forEach(function (L) { L.items.sort(function (a, b) { return a.x - b.x; }); });
+        pages.push(lines); }); }); }); })(i);
+      return p.then(function () { return pages; });
+    });
+  }
+  /* 표 머리글을 찾아 칸 범위를 정하고, 아래 줄을 그 칸에 나눠 담음
+     - 글자(왼쪽 정렬)는 시작 위치, 숫자(오른쪽 정렬)는 끝 위치로 칸을 정함
+     - 칸 안에서 줄바꿈된 글은 앞 줄에 이어 붙임 */
+  function pdfToRows(pages, tabs) {
+    tabs = tabs || ['companies', 'orgs', 'sites'].map(function (k) { return { sheet: C[k].sheet, cols: C[k].cols }; });
+    var out = {}, cur = null, hdrF = null, useF = {};
+    var sq = function (v) { return String(v == null ? '' : v).replace(/[\s*]/g, ''); };
+    var isNum = function (v) { return /^-?[\d,]+(\.\d+)?$/.test(String(v).trim()); };
+    var joinTxt = function (a, b) { return a ? (/[가-힣)]$/.test(a) && /^[가-힣(]/.test(b) ? a + b : a + ' ' + b) : b; };
+    pages.forEach(function (lines) {
+      // 붙어 있는 조각 합치기(한 칸의 글이 여러 조각으로 나뉜 경우)
+      lines.forEach(function (L) { L.raw = L.items.slice(); var m = []; L.items.forEach(function (t) { var p = m[m.length - 1]; if (p && t.x >= p.x - 0.5 && (t.x - (p.x + p.w) < 0.6 || (t.x - (p.x + p.w) < 2.2 && Math.abs(t.y - p.y) < 0.05))) { p.s += (t.x - (p.x + p.w) > 1 ? ' ' : '') + t.s; p.w = t.x + t.w - p.x; } else m.push({ s: t.s, x: t.x, y: t.y, w: t.w, h: t.h, f: t.f }); }); L.items = m; });
+      var used = {};
+      // 1) 머리글 줄 찾기(두 줄로 접힌 머리글 · 세로 가운데 맞춤 포함)
+      var heads = [];
+      lines.forEach(function (L, li) {
+        if (L.items.length < 2) return;
+        var hs = L.items.map(function (t) { return hn(t.s); }), best = null, bs = 1;
+        var hit = function (h) { return h.length >= 2 && hs.some(function (v) { return v.length >= 2 && (v === h || v.indexOf(h) === 0 || h.indexOf(v) === 0); }); };
+        tabs.forEach(function (T) { if (!hit(hn(T.cols[0].h))) return; var sc = T.cols.filter(function (c) { return hit(hn(c.h)); }).length; var hAll2 = T.cols.map(function (c) { return String(c.h).replace(/[\s*]/g, ''); }); var hl = L.items.filter(function (t) { var v = String(t.s).replace(/[\s*]/g, ''); return v && hAll2.some(function (h) { return h.indexOf(v) >= 0; }); }).length;
+          if (sc > bs && hl * 2 >= L.items.length) { bs = sc; best = T; } });   // 줄의 절반 이상이 머리글 글자여야(안내 문장 제외)
+        if (best) heads.push({ li: li, kind: best.sheet, tab: best });
+      });
+      heads.forEach(function (H) {
+        var cols = H.tab.cols, hAll = cols.map(function (c) { return sq(c.h); }), dAll = cols.map(function (c) { return sq(c.d); }).join('|');
+        var inHead = function (t) { var v = sq(t.s); return v && hAll.some(function (h) { return h.indexOf(v) >= 0; }); };
+        var inDesc = function (t) { var v = sq(t.s); return v && dAll.indexOf(v) >= 0; };
+        var items = lines[H.li].items.slice(); used[H.li] = 'h';
+        for (var j = 0; j < lines.length; j++) if (!used[j] && Math.abs(lines[j].y - lines[H.li].y) < 40 && lines[j].items.every(inHead)) { items = items.concat(lines[j].items); used[j] = 'h'; }
+        var anchors = [], taken = {};
+        [0, 1].forEach(function (pass) { cols.forEach(function (c) { var h = hn(c.h); if (h.length < (pass ? 2 : 1) || anchors.some(function (b) { return b.k === c.k; })) return;
+          var hi = -1; items.forEach(function (t, ti) { if (hi >= 0 || taken[ti]) return; var v = hn(t.s); if (v.length >= (pass ? 2 : 1) && (pass === 0 ? v === h : (v.indexOf(h) === 0 || h.indexOf(v) === 0))) hi = ti; });
+          if (hi < 0) return; taken[hi] = 1; var hit = items[hi];
+          var a = { k: c.k, h: c.h, s: hit.x, e: hit.x + hit.w };
+          items.forEach(function (t, ti) { if (!taken[ti] && sq(c.h).indexOf(sq(t.s)) > 0 && t.x < hit.x + hit.w + 20 && t.x + t.w > hit.x - 20) { taken[ti] = 1; a.s = Math.min(a.s, t.x); a.e = Math.max(a.e, t.x + t.w); } });   // 같은 칸의 접힌 머리글 조각
+          anchors.push(a); }); });
+        anchors.sort(function (a, b) { return a.s - b.s; });
+        if (anchors.length >= 2 && anchors[0].k === cols[0].k) { H.anchors = anchors; H.first = cols[0].k; items.forEach(function (t, ti) { if (taken[ti] && t.f) (hdrF = hdrF || {})[t.f] = 1; }); H.inDesc = inDesc; } else used[H.li] = 0;
+        // 설명 줄(2번째 줄) 건너뛰기
+        if (H.anchors) for (var q = H.li + 1; q < lines.length && lines[H.li].y - lines[q].y < 90; q++) if (!used[q] && lines[q].items.filter(inDesc).length * 2 >= lines[q].items.length) used[q] = 'd';
+      });
+      // 2) 자료 줄 모으기(칸 나누기는 표 전체를 본 뒤에)
+      lines.forEach(function (L, li) {
+        var H = heads.filter(function (h) { return h.li === li && h.anchors; })[0];
+        if (H) { var T = out[H.kind] || (out[H.kind] = { anchors: H.anchors, first: H.first, cols: H.tab.cols, lines: [] }); cur = T; T.lines.push({ hdr: 1 }); return; }
+        if (used[li] || !cur) return;
+        var raw = L.items.map(function (t) { return t.s; }).join(' ');
+        if (/Designed\s*&\s*Developed|Produced by|^\s*-?\s*\d+\s*-?\s*$|\d+\s*\/\s*\d+\s*$|^(Page|페이지)\s*\d/i.test(raw)) return;      // 서명 · 쪽 번호
+        var bf = hdrF ? L.items.filter(function (t) { return t.f && hdrF[t.f]; }).map(function (t) { return t.f; }) : [];
+        if (L.items.length >= 2 && bf.length >= L.items.length * 0.6) { cur.lines.push({ brk: bf, line: L }); return; }
+        L.items.forEach(function (t) { if (t.f) useF[t.f] = (useF[t.f] || 0) + 1; });   // 다른 표의 머리글일 수 있음(아래에서 판단)
+        cur.lines.push(L);
+      });
+    });
+    // 3) 칸 경계 = 각 칸에서 가장 왼쪽에 시작하는 글자(왼쪽 정렬) — 머리글 가운데 사이 구간에서 찾음
+    Object.keys(out).forEach(function (kind) {
+      var T = out[kind], A = T.anchors, skip = false;
+      // 굵은 머리글 글꼴로만 된 줄(자료 줄에는 거의 안 쓰이는 글꼴) = 다른 표 시작 → 다음 머리글까지 건너뜀
+      var nb = T.lines.filter(function (L) { return L.brk; }).length, nn = T.lines.filter(function (L) { return !L.brk && !L.hdr; }).length;
+      if (nb > nn) T.lines.forEach(function (L) { if (L.brk) { L.keep = 1; } });   // 머리글과 자료가 같은 글꼴인 PDF
+      T.lines = T.lines.filter(function (L) { if (L.hdr) { skip = false; return false; } if (L.brk && !L.keep) { if (L.brk.every(function (f) { return (useF[f] || 0) <= 3; })) { skip = true; return false; } } return !skip; }).map(function (L) { return L.brk ? L.line : L; });
+      // 칸이 시작하는 x 는 여러 줄에서 똑같이 반복됨 → 가장 많이 나온 위치(2번 이상)를 칸 경계로
+      A.forEach(function (a, i) { a.L = i === 0 ? -1e9 : null; a.cnt = {}; });
+      T.lines.forEach(function (L) { var pe = -1e9; L.raw.forEach(function (t) { var gap = t.x - pe; pe = t.x + t.w; if (isNum(t.s) || gap < 0.3) return;
+        for (var i = 1; i < A.length; i++) if (t.x > A[i - 1].e - 1 && t.x <= A[i].s + 1) { var r = Math.round(t.x * 2) / 2; A[i].cnt[r] = (A[i].cnt[r] || 0) + 1; } }); });
+      A.forEach(function (a, i) { if (!i) return; var best = null, bc = 1;
+        Object.keys(a.cnt).forEach(function (x) { var c = a.cnt[x]; if (c > bc || (c === bc && best != null && +x < best)) { bc = c; best = +x; } });
+        a.L = best != null ? best - 0.5 : (A[i - 1].e + a.s) / 2; a.mode = best != null; });
+      var atEdge = function (x) { return A.some(function (a, i) { return i && a.mode && Math.abs(x - (a.L + 0.5)) < 0.8; }); };
+      var rows = [], last = null, lastY = 0;
+      T.lines.forEach(function (L) {
+        var row = {}, endAt = {}, pk = null, pe = -1e9, py = 0, ps = '';
+        L.raw.forEach(function (t) {
+          var ci = 0;
+          if (pk && t.x >= pe - 0.5 && !(isNum(ps) && atEdge(t.x)) && (t.x - pe < 0.3 || (t.x - pe < 2.2 && Math.abs(t.y - py) < 0.05 && !isNum(ps)))) { row[pk] += (t.x - pe > 0.4 ? ' ' : '') + t.s; ps = ''; endAt[pk] = pe = t.x + t.w; return; }   // 바로 붙은 조각 = 앞 글의 나머지(글꼴만 바뀜)
+          if (isNum(t.s)) { for (var i = 0; i < A.length; i++) if (A[i].L <= t.x + t.w / 2) ci = i; }   // 숫자 = 오른쪽 정렬 → 가운데 위치
+          else { for (var i2 = 0; i2 < A.length; i2++) if (A[i2].L <= t.x + 1) ci = i2; }
+          var k = A[ci].k; row[k] = row[k] ? row[k] + (t.x - endAt[k] > 0.4 ? ' ' : '') + t.s : t.s; endAt[k] = pe = t.x + t.w; pk = k; py = t.y; ps = t.s;
+        });
+        var nm = row[T.first];
+        if (!nm) {           // 첫 칸(이름)이 빈 줄 = 위 줄의 줄바꿈된 나머지
+          if (last && lastY - L.y < 30) Object.keys(row).forEach(function (k) { last[k] = last[k] ? joinTxt(String(last[k]), row[k]) : row[k]; });
+          return;
+        }
+        if (/^\(?예시/.test(nm)) { last = null; return; }
+        rows.push(row); last = row; lastY = L.y;
+      });
+      T.rows = rows;
+    });
+    return out;
+  }
+  function pdfWorkbook(X, ab, lib, code) {
+    return (lib ? Promise.resolve(lib) : loadPdf()).then(function (L) { return pdfLines(L, ab); }).then(function (pages) {
+      var tabs = ['companies', 'orgs', 'sites'].map(function (k) { return { sheet: C[k].sheet, cols: C[k].cols }; });
+      if (code) programSpec(code).sheets.forEach(function (s) { if (!s.kind && !s.ref && s.cols) tabs.push({ sheet: s.sheet, cols: s.cols }); });   // 프로그램 전용 시트(근태관리 인원·급여 등)
+      var R = pdfToRows(pages, tabs), wb = new X.Workbook(), n = 0;
+      Object.keys(R).forEach(function (sheet) {
+        var T = R[sheet], A = T.anchors, ws = wb.addWorksheet(sheet), numK = {};
+        T.cols.forEach(function (c) { if (c.t === 'num' || c.num || /^(to|lat|lng|total|m|f|sec|cln|etc|jo)$/.test(c.k)) numK[c.k] = 1; });
+        ws.addRow(A.map(function (a) { return a.h; })); ws.addRow(A.map(function () { return ''; }));
+        T.rows.forEach(function (r) { ws.addRow(A.map(function (a) { var v = r[a.k] == null ? '' : String(r[a.k]); return (numK[a.k] && /^-?[\d,]+(\.\d+)?$/.test(v)) ? Number(v.replace(/,/g, '')) : v; })); n++; });
+      });
+      if (!n) throw new Error('PDF에서 표를 찾지 못했습니다 — 「사업장명 · 조직명 · 회사명」 머리글이 있는 표(이 프로그램의 엑셀 양식을 PDF로 저장한 파일 등)를 고르세요. 사진 · 스캔으로 만든 PDF는 글자를 읽을 수 없습니다.');
+      return wb;
+    });
+  }
+  /* 다른 프로그램 전용 양식용: pdfRead(파일 · ArrayBuffer, [{sheet, cols:[{k,h}]}]) → { 시트명: [[머리글…], [값…], …] } */
+  function pdfRead(src, tabs) {
+    var abP = src && src.arrayBuffer ? src.arrayBuffer() : Promise.resolve(src);
+    return abP.then(function (ab) { return loadPdf().then(function (L) { return pdfLines(L, ab); }); }).then(function (pages) {
+      var R = pdfToRows(pages, tabs), out = {}, n = 0;
+      Object.keys(R).forEach(function (sh) { var A = R[sh].anchors; out[sh] = [A.map(function (a) { return a.h; })].concat(R[sh].rows.map(function (r) { n++; return A.map(function (a) { return r[a.k] == null ? '' : String(r[a.k]); }); })); });
+      if (!n) throw new Error('PDF에서 표를 찾지 못했습니다 — 양식을 PDF로 저장한 파일처럼 표가 글자로 들어 있는 PDF를 고르세요. 사진 · 스캔 PDF는 읽을 수 없습니다.');
+      return out;
+    });
+  }
   var NAVY = 'FF0B1F8A', GREEN = 'FF1B7A34';
   function rowsOf(kind, keys) {
     var L = kind === 'companies' ? companies() : kind === 'orgs' ? orgs() : sites();
@@ -200,15 +349,16 @@
     var r = 2; var put = function (c, v, f) { var x = g.getCell(r, c); x.value = v; if (f) x.font = f; x.alignment = { wrapText: true, vertical: 'top' }; return x; };
     g.mergeCells(r, 2, r, 3); put(2, P.en + ' — 자료 입력 양식', { bold: true, size: 15, color: { argb: NAVY } }); r++;
     g.mergeCells(r, 2, r, 3); put(2, P.ko + ' · S-Tec Operations and Sales Integrated Management System', { color: { argb: 'FF5D6678' } }); r += 2;
-    [['하는 일', P.what], ['작성 방법', '① 각 시트의 3번째 줄부터 한 줄에 하나씩 적습니다(1줄 = 항목 이름, 2줄 = 설명).  ② 머리글에 * 가 있는 칸은 꼭 적습니다.  ③ 「(예시)」로 시작하는 줄은 읽지 않습니다 — 지우거나 그대로 두세요.  ④ 빈 칸은 「바꾸지 않음」입니다.'],
-     ['불러오기', '프로그램 화면 왼쪽 아래 「📂 자료」 → 「엑셀 불러오기」 → 이 파일 선택 → 미리보기 확인 → 「적용」.'],
-     ['함께 쓰는 자료', '「회사」 · 「조직」 · 「사업장」 시트는 9개 프로그램이 함께 쓰는 공통 기준정보로 저장됩니다(제작자 · 관리자만). 같은 이름이 이미 있으면 적은 칸만 바뀌고, 없으면 새로 추가됩니다.'],
+    [['하는 일', P.what], ['작성 방법', '① 각 시트의 3번째 줄부터 한 줄에 하나씩 적습니다(1줄 = 항목 이름, 2줄 = 설명).  ② 머리글에 * 가 있는 칸은 꼭 적습니다.  ③ 「(예시)」로 시작하는 줄은 읽지 않습니다 — 지우거나 그대로 두세요.  ④ 빈 칸은 「바꾸지 않음」입니다.  ⑤ 「▼」 표시 칸(소속 조직 · 형태 · 업무 · 근무형태 · 계약 T/O 등)은 칸을 누르면 나오는 목록에서 고르고, 목록에 없을 때만 직접 적습니다.'],
+     ['불러오기', '프로그램 화면 왼쪽 아래 「📂 자료」 → 「엑셀 · PDF 파일 고르기」 → 이 파일(또는 이 파일을 PDF로 저장한 것) 선택 → 미리보기 확인 → 「적용」.'],
+     ['함께 쓰는 자료', '「회사」 · 「조직」 · 「사업장」 시트는 12개 프로그램이 함께 쓰는 공통 기준정보로 저장됩니다(제작자 · 관리자만). 같은 이름이 이미 있으면 적은 칸만 바뀌고, 없으면 새로 추가됩니다.'],
      ['주의', '회사명 · 조직명 · 사업장명은 시트끼리 같은 글자로 적어야 연결됩니다. 개인정보(연락처 등)가 들어가므로 파일 보관에 주의하세요.']].forEach(function (x) {
       put(2, x[0], { bold: true, color: { argb: GREEN } }); put(3, x[1]); g.getRow(r).height = Math.max(20, Math.ceil(x[1].length / 60) * 16); r++; });
     r++; put(2, '시트', { bold: true, color: { argb: 'FFFFFFFF' } }).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }; put(3, '내용', { bold: true, color: { argb: 'FFFFFFFF' } }).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }; r++;
     P.sheets.forEach(function (s) { put(2, s.sheet, { bold: true }); put(3, s.title + ' — ' + s.desc); g.getRow(r).height = 30; r++; });
     r++; g.mergeCells(r, 2, r, 3); put(2, 'Designed & Developed by Rat Rae Choi', { italic: true, color: { argb: 'FF8A1C34' } }).alignment = { horizontal: 'right' };
-    var lists = {};
+    var lists = {}, picks = [];
+    var dvAdd = function (ws, range, dv) { if (ws.dataValidations && ws.dataValidations.add) ws.dataValidations.add(range, dv); else { var m = range.match(/^([A-Z]+)(\d+):[A-Z]+(\d+)$/); for (var r = +m[2]; r <= +m[3]; r++) ws.getCell(m[1] + r).dataValidation = dv; } };
     P.sheets.forEach(function (s) {
       if (P.own && !s.kind) return;     // 근태관리 전용 시트는 근태관리 양식에서 만듦
       var ws = wb.addWorksheet(s.sheet, { views: [{ state: 'frozen', ySplit: 2, xSplit: 1 }], properties: { tabColor: { argb: s.kind ? NAVY : GREEN } } });
@@ -220,15 +370,38 @@
       var data = opt.fill && s.kind ? rowsOf(s.kind, s.cols.map(function (c) { return c.k; })) : [];
       if (!opt.fill || !data.length) { var ex = s.cols.map(function (c, i) { var v = c.ex == null ? '' : c.ex; return i === 0 ? '(예시) ' + v : v; }); var er = ws.addRow(ex); er.font = { color: { argb: 'FF8A93A6' }, italic: true }; }
       data.forEach(function (o) { ws.addRow(s.cols.map(function (c) { return o[c.k]; })); });
+      s.cols.forEach(function (c, i) { var w = ws.getColumn(i + 1).width, mx = 0; data.forEach(function (o) { var v = o[c.k]; if (v != null) mx = Math.max(mx, String(v).replace(/[^\x00-\xff]/g, 'xx').length + String(v).replace(/[\x00-\xff]/g, '').length * 0.3); }); ws.getColumn(i + 1).width = Math.min(90, Math.max(w, Math.ceil(mx) + 3)); });   // 글이 잘리지 않게(PDF로 저장해도 다 보이게)
+      ws.pageSetup = { orientation: 'landscape', paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '1:2', margins: { left: 0.3, right: 0.3, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 } };
       var last = Math.max(ws.rowCount + 300, 400);
       s.cols.forEach(function (c, i) {
         var L = ws.getColumn(i + 1).letter;
-        if (c.t === 'list' && c.list) for (var rr = 3; rr <= last; rr++) ws.getCell(L + rr).dataValidation = { type: 'list', allowBlank: true, formulae: ['"' + c.list.join(',') + '"'] };
-        if (c.t === 'num') ws.getColumn(i + 1).numFmt = /위도|경도/.test(c.h) ? '0.000000' : '#,##0';
+        if (c.t === 'list' && c.list) dvAdd(ws, L + '3:' + L + last, { type: 'list', allowBlank: true, formulae: ['"' + c.list.join(',') + '"'] });
+        if (c.t === 'pick') picks.push({ ws: ws, L: L, c: c, last: last });
+        if (c.t === 'num' || c.num) ws.getColumn(i + 1).numFmt = /위도|경도/.test(c.h) ? '0.000000' : '#,##0';
       });
       lists[s.sheet] = ws;
       ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: s.cols.length } };
     });
+    /* 고르는 칸: 숨은 「목록」 시트에서 고르기 · 목록에 없으면 직접 적어도 받아 줌(오류 창 없음) */
+    if (picks.length) {
+      var ls = wb.addWorksheet('목록', { state: 'hidden' }), col = 0, refOf = {};
+      var addList = function (key, title, vals) {
+        col++; var Lc = ls.getColumn(col).letter; ls.getCell(Lc + '1').value = title;
+        vals.forEach(function (v, i) { ls.getCell(Lc + (i + 2)).value = v; });
+        refOf[key] = "'목록'!$" + Lc + '$2:$' + Lc + '$' + Math.max(2, vals.length + 1);
+      };
+      var uniq = function (a) { var o = {}, r = []; a.forEach(function (v) { v = v == null ? '' : String(v).trim(); if (v && !o[v]) { o[v] = 1; r.push(v); } }); return r; };
+      picks.forEach(function (x) {
+        var c = x.c, key = c.ref ? 'ref_' + c.ref : x.ws.name + '_' + c.k, ref = refOf[key];
+        if (!ref) {
+          if (c.ref === 'org') ref = lists['조직'] ? "'조직'!$A$3:$A$" + (lists['조직'].rowCount + 300) : (addList(key, '조직', uniq(orgs().map(function (o) { return o.name; }).concat(['동부지사', '서부지사', '남부지사', '중부지사']))), refOf[key]);
+          else if (c.ref === 'co') ref = lists['회사'] ? "'회사'!$A$3:$A$" + (lists['회사'].rowCount + 100) : (addList(key, '회사', uniq(['에스텍베스트'].concat(companies().map(function (o) { return o.name; })))), refOf[key]);
+          else { var extra = c.num ? [] : sites().map(function (r) { return r[c.k]; }); addList(key, c.h, uniq(c.list.concat(extra))); ref = refOf[key]; }
+          refOf[key] = ref;
+        }
+        dvAdd(x.ws, x.L + '3:' + x.L + x.last, { type: 'list', allowBlank: true, showErrorMessage: false, showInputMessage: true, promptTitle: '고르거나 직접 입력', prompt: '▼ 목록에서 고르세요. 목록에 없으면 직접 적어도 됩니다.', formulae: [ref] });
+      });
+    }
     return wb;
   }
   function download(name, buf) {
@@ -288,9 +461,10 @@
       if (!o.company) { o.company = '에스텍베스트'; res.warn.push('조직 ' + o._r + '행 「' + o.name + '」: 회사명이 없어 「에스텍베스트」로 저장합니다'); }
     });
     (res.sheets.orgs || []).forEach(function (o) {
-      if (!coNames[norm(o.company)]) res.warn.push('조직 ' + o._r + '행 「' + o.name + '」: 회사 「' + o.company + '」이 「회사」 시트에 없습니다(그대로 저장)');
+      if ((coRows.length || companies().length) && !coNames[norm(o.company)]) res.warn.push('조직 ' + o._r + '행 「' + o.name + '」: 회사 「' + o.company + '」이 「회사」 시트에 없습니다(그대로 저장)');
       if (o.type && ORG_TYPES.indexOf(String(o.type).trim()) < 0) res.warn.push('조직 ' + o._r + '행 「' + o.name + '」: 구분 「' + o.type + '」은 목록에 없는 값입니다(그대로 저장)');
-      var k = orgKey(o); if (keys[k] && norm(keys[k]) !== norm(o.name)) res.err.push('조직 ' + o._r + '행 「' + o.name + '」: 약칭 「' + k + '」이 다른 조직(' + keys[k] + ')과 겹칩니다 — 「약칭」 칸에 다른 이름을 적으세요');
+      var k = orgKey(o); if (keys[k] && norm(keys[k]) !== norm(o.name) && !o.key) { o.key = String(o.name).trim(); k = o.key; }   // 자동 약칭이 겹치면 전체 이름을 약칭으로
+      if (keys[k] && norm(keys[k]) !== norm(o.name)) res.err.push('조직 ' + o._r + '행 「' + o.name + '」: 약칭 「' + k + '」이 다른 조직(' + keys[k] + ')과 겹칩니다 — 「약칭」 칸에 다른 이름을 적으세요');
       keys[k] = o.name; orgNames[norm(o.name)] = 1; orgNames[norm(k)] = 1;
     });
     (res.sheets.sites || []).forEach(function (s) {
@@ -339,9 +513,9 @@
     var el = document.createElement('div'); el.id = 'smPop';
     el.innerHTML = '<div class="box" role="dialog" aria-modal="true"><div class="hd"><b>📂 자료 입력 · 불러오기</b><small>' + esc(P.en) + ' · ' + esc(P.ko) + '</small></div><div class="bd">'
       + '<div class="note">' + esc(P.what) + '<div class="sh">' + P.sheets.map(function (s) { return '<span>' + esc(s.sheet) + '</span>'; }).join('') + '</div>'
-      + '회사 · 조직 · 사업장은 <b>9개 프로그램 공통 기준정보</b>로 저장되어 다른 프로그램에도 함께 반영됩니다(제작자 · 관리자만 저장).</div>'
+      + '회사 · 조직 · 사업장은 <b>12개 프로그램 공통 기준정보</b>로 저장되어 다른 프로그램에도 함께 반영됩니다(제작자 · 관리자만 저장).</div>'
       + '<h4>① 입력 양식 받기</h4><div class="row"><button class="b p" data-a="tpl">📥 빈 양식(엑셀)</button><button class="b" data-a="cur">📥 지금 자료 채운 양식</button><button class="b" data-a="pdf">📄 작성 안내서(PDF)</button></div>'
-      + '<h4>② 작성한 엑셀 불러오기</h4><div class="row"><button class="b g" data-a="pick">📤 엑셀 파일 고르기</button><input type="file" accept=".xlsx" hidden id="smFile"></div><div id="smPrev"></div>'
+      + '<h4>② 작성한 엑셀 · PDF 불러오기</h4><div class="row"><button class="b g" data-a="pick">📤 엑셀 · PDF 파일 고르기</button><input type="file" accept=".xlsx,.pdf,application/pdf" hidden id="smFile"></div><p style="color:#5D6678;font-size:12px;margin:6px 0 0">PDF는 표가 글자로 들어 있는 파일(엑셀 양식을 PDF로 저장한 것 등)을 읽습니다. 사진 · 스캔 PDF는 읽을 수 없습니다.</p><div id="smPrev"></div>'
       + '<p id="smMsg" style="color:#5D6678;font-size:12.5px;margin:10px 0 0">' + (cache().at ? '공통 기준정보: 회사 ' + companies().length + ' · 조직 ' + orgs().length + ' · 사업장 ' + sites().length + '건 (마지막 변경 ' + String(cache().at).slice(0, 16).replace('T', ' ') + ')' : '공통 기준정보가 아직 비어 있습니다 — 지금은 기존 에스텍베스트 자료로 동작합니다.') + '</p>'
       + '</div><div class="ft"><button class="b" data-a="x" style="font-style:normal;font-family:inherit">닫기</button><span>Designed &amp; Developed by Rat Rae Choi</span></div></div>';
     document.body.appendChild(el);
@@ -356,13 +530,14 @@
         if ((a === 'tpl' || a === 'cur') && CFG.template) { CFG.template(a === 'cur'); return; }
         b.disabled = true; msg('양식을 만드는 중…');
         loadExcel().then(function (X) { var wb = buildWorkbook(X, CFG.code, { fill: a === 'cur' }); return wb.xlsx.writeBuffer(); })
-          .then(function (buf) { download(fileName(CFG.code, a === 'cur'), buf); msg('양식을 내려받았습니다. 엑셀에 작성한 뒤 「② 엑셀 파일 고르기」로 불러오세요.'); })
+          .then(function (buf) { download(fileName(CFG.code, a === 'cur'), buf); msg('양식을 내려받았습니다. 엑셀에 작성한 뒤 「② 엑셀 · PDF 파일 고르기」로 불러오세요.'); })
           .catch(function (e) { msg('⚠️ ' + esc(e.message || e)); }).then(function () { b.disabled = false; });
       };
     });
     el.querySelector('#smFile').onchange = function (ev) {
       var f = ev.target.files[0]; ev.target.value = ''; if (!f) return; var box = el.querySelector('#smPrev'); box.innerHTML = '<p>읽는 중…</p>';
-      loadExcel().then(function (X) { return f.arrayBuffer().then(function (ab) { var wb = new X.Workbook(); return wb.xlsx.load(ab).then(function () { return wb; }); }); })
+      var isPdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+      loadExcel().then(function (X) { return f.arrayBuffer().then(function (ab) { if (isPdf) return pdfWorkbook(X, ab, null, CFG.code); var wb = new X.Workbook(); return wb.xlsx.load(ab).then(function () { return wb; }); }); })
         .then(function (wb) { preview(box, f, plan(wb, CFG.code)); })
         .catch(function (e) { box.innerHTML = '<div class="err">⛔ ' + esc(e.message || e) + '</div>'; });
     };
@@ -406,7 +581,7 @@
     CFG = cfg || {}; if (!CFG.code) return;
     var add = function () {
       if (document.getElementById('smBtn') || CFG.button === false) return; css();
-      var b = document.createElement('button'); b.id = 'smBtn'; b.type = 'button'; b.title = '자료 입력 양식(엑셀) · 작성 안내서(PDF) · 엑셀 불러오기'; b.textContent = '📂 자료';
+      var b = document.createElement('button'); b.id = 'smBtn'; b.type = 'button'; b.title = '자료 입력 양식(엑셀) · 작성 안내서(PDF) · 엑셀 · PDF 불러오기'; b.textContent = '📂 자료';
       if (CFG.btnStyle) b.setAttribute('style', CFG.btnStyle);
       b.onclick = open; document.body.appendChild(b);
     };
@@ -429,7 +604,7 @@
   }
   if (typeof document !== 'undefined') start();
 
-  var api = { MAIN: MAIN, SPEC: C, PROGRAMS: PROGRAMS, ORG_TYPES: ORG_TYPES, programSpec: programSpec, cache: cache, refresh: refresh, save: save,
+  var api = { pdfToRows: pdfToRows, pdfWorkbook: pdfWorkbook, pdfLines: pdfLines, pdfRead: pdfRead, MAIN: MAIN, SPEC: C, PROGRAMS: PROGRAMS, ORG_TYPES: ORG_TYPES, programSpec: programSpec, cache: cache, refresh: refresh, save: save,
     companies: companies, orgs: orgs, sites: sites, orgKey: orgKey, orgOf: orgOf, companyInfo: companyInfo, color: color,
     branchKeys: branchKeys, colors: colors, mergeBranchObjs: mergeBranchObjs, mergeSites: mergeSites,
     buildWorkbook: buildWorkbook, loadExcel: loadExcel, plan: plan, mergeList: mergeList, readSheet: readSheet,
