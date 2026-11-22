@@ -509,7 +509,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.9.10';
+const APP_VERSION = '1.9.11';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -538,9 +538,9 @@ const BUILTIN = [
   {code:'stpm', name:'성과 관리 시스템',  full_name:'S-Tec Performance Management System', url:'https://sadness500-boop.github.io/S-Tec-Performance-Management-System/', icon:'assets/apps/stpm.png', color:'#17552F', sort:100, uses_access:true, note:'업종·산업별 일일·주간·월간·연간 성과 계수화 · 운영실태·품질점검'},
   {code:'stac', name:'통합 출입관리 시스템', full_name:'S-Tec Integrated Access Control System', url:'https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/', icon:'assets/apps/stac.png', color:'#0C2350', sort:110, uses_access:true, note:'방문자 · 방문차량 출입 등록 · 초성 · 번호판 · 업체 통합 검색 · 누적 DATA'},
   /* v1.9.7: 「함께 쓰는 사이트」 3개를 하단 섹션 대신 메인 프로그램 카드로 (로그인 없이 쓰는 공개 사이트 — 승인된 계정 모두) */
-  {code:'ppopgi', name:'오늘의 뽑기판', full_name:'', url:'https://sadness500-boop.github.io/ppopgi/', icon:'https://sadness500-boop.github.io/ppopgi/icons/icon-192.png', color:'#E0452B', sort:120, uses_access:false, note:'모임용 뽑기·사다리·미니게임'},
-  {code:'matgil', name:'팔도 제철맛길', full_name:'', url:'https://sadness500-boop.github.io/jecheolmatgil/', icon:'https://sadness500-boop.github.io/jecheolmatgil/icons/icon-192.png', color:'#17552F', sort:130, uses_access:false, note:'달마다 제철 음식과 지역 맛집 지도'},
-  {code:'festa', name:'팔도 축제길', full_name:'', url:'https://sadness500-boop.github.io/Festival/', icon:'https://sadness500-boop.github.io/Festival/icons/icon-192.png', color:'#1F4E79', sort:140, uses_access:false, note:'전국 지역·계절·월별 축제 지도'},
+  {code:'ppopgi', name:'오늘의 뽑기판', full_name:'', url:'https://sadness500-boop.github.io/ppopgi/', icon:'https://sadness500-boop.github.io/ppopgi/icons/icon-192.png', color:'#E0452B', sort:120, uses_access:false, open_all:true, note:'모임용 뽑기·사다리·미니게임'},
+  {code:'matgil', name:'팔도 제철맛길', full_name:'', url:'https://sadness500-boop.github.io/jecheolmatgil/', icon:'https://sadness500-boop.github.io/jecheolmatgil/icons/icon-192.png', color:'#17552F', sort:130, uses_access:false, open_all:true, note:'달마다 제철 음식과 지역 맛집 지도'},
+  {code:'festa', name:'팔도 축제길', full_name:'', url:'https://sadness500-boop.github.io/Festival/', icon:'https://sadness500-boop.github.io/Festival/icons/icon-192.png', color:'#1F4E79', sort:140, uses_access:false, open_all:true, note:'전국 지역·계절·월별 축제 지도'},
 ];
 const BRANCHES = ['동부','서부','남부','중부'];
 try{ if(window.StecMaster) StecMaster.branchKeys(BRANCHES); }catch(e){}
@@ -1204,7 +1204,7 @@ function editOrg(o, parentId){
     <div class="seg" style="margin-top:6px"><label><input type="checkbox" id="ouJ" ${o.join_open ? 'checked' : ''}> 가입 화면 목록에 보이기</label>${n ? '' : `<label><input type="checkbox" id="ouA" ${o.active !== false ? 'checked' : ''}> 사용 중 (끄면 닫기 · 기록은 남음)</label>`}</div>
     ${own ? `<div class="org-progs"><h4>열어 줄 프로그램 <small>(제작자만)</small></h4>
       <label class="seg"><input type="checkbox" id="ouInh" ${inhP ? 'checked' : ''}> 위 조직 설정 물려받기${o.parent ? ` — 지금: ${E(orgEffApps(o.parent))}` : ' (맨 위는 「모두」)'}</label>
-      <div class="seg" id="ouPg" style="${inhP ? 'opacity:.45;pointer-events:none' : ''}">${progs.map(p => `<label><input type="checkbox" value="${E(p.code)}" ${(o.programs || []).includes(p.code) ? 'checked' : ''}> ${E(p.name)}</label>`).join('')}</div>
+      <div class="seg" id="ouPg" style="${inhP ? 'opacity:.45;pointer-events:none' : ''}">${progs.map(p => p.open_all ? `<label style="opacity:.6" title="전체 공개 프로그램 — 모든 조직에 열려 있습니다"><input type="checkbox" checked disabled> ${E(p.name)} <small>(전체 공개)</small></label>` : `<label><input type="checkbox" value="${E(p.code)}" ${(o.programs || []).includes(p.code) ? 'checked' : ''}> ${E(p.name)}</label>`).join('')}</div>
       ${feats.length ? `<h4>세부 기능 <small>(체크를 비우면 위 조직 · 시스템 설정을 따름)</small></h4>${feats.map(p => `<div class="seg" data-fp="${E(p.code)}"><b style="min-width:120px">${E(p.name)}</b>${(p.features || []).map(f => `<label><input type="checkbox" value="${E(f.key)}" ${o.features && o.features[p.code] && o.features[p.code].includes(f.key) ? 'checked' : ''}> ${E(f.name)}</label>`).join('')}</div>`).join('')}` : ''}</div>` : ''}
     <p id="ouMsg" style="color:#B3261E;font-size:13px"></p>
     <div class="p-row"><button class="btn sec" id="ouX">취소</button><button class="btn" id="ouSv">저장</button></div>`);
@@ -1690,6 +1690,7 @@ async function admAccess(reload){
   const cell = (u, ap) => {
     if(u.role === 'owner' || u.role === 'admin') return `<span class="pill p-own">전체 (${ROLE_KO[u.role]})</span>`;
     if(u.extra_apps && u.extra_apps[ap.code]){ const xa = u.extra_apps[ap.code]; return `<span class="cell on" style="background:rgba(232,160,20,.16)" title="제작자가 이 사람에게만 따로 준 권한 — 「👥 사용자 › ⭐ 추가 권한」에서 바꿉니다">⭐ 제작자 추가<small>${xa && xa.expires_at ? '~' + E(xa.expires_at) : '조직 범위 밖 허용'}</small></span>`; }
+    if(ap.open_all) return `<span class="cell on" style="background:rgba(27,122,52,.12)" title="로그인한 모든 계정이 씁니다 — 관리범위 · 조직 공개와 상관없음">전체 공개<small>지정 필요 없음</small></span>`;
     if(u.org_apps && !u.org_apps.includes(ap.code)) return `<span class="cell" style="opacity:.5" title="이 사람의 회사·조직에 열리지 않은 프로그램">조직 비공개<small>${E((u.org_path || '').split(' › ').slice(-1)[0] || '')}</small></span>`;
     if(ap.code === 'ams' || ap.uses_access === false) return `<span class="cell" title="근태관리 프로그램의 「관리 범위」에서 지정">${E(scopeLabel(scopeById[u.id]))}<small>근태관리에서 지정</small></span>`;
     const x = (u.apps || {})[ap.code];
@@ -1711,7 +1712,7 @@ async function admAccess(reload){
   draw();
   $('acQ').oninput = () => { ADM.q = $('acQ').value; draw(); };
   $('acCsv').onclick = () => csv('프로그램별권한', ['이름','이메일','역할', ...apps.map(a => a.name)], ADM.access.map(u => [u.name, u.email, ROLE_KO[u.role],
-    ...apps.map(a => (u.role !== 'user') ? '전체' : (a.code === 'ams' || a.uses_access === false) ? scopeLabel(scopeById[u.id]) : ((u.apps||{})[a.code] && u.apps[a.code].perm === 'use' ? '사용' + (u.apps[a.code].expires_at ? ' ~' + u.apps[a.code].expires_at : '') : '사용 안 함'))]));
+    ...apps.map(a => (u.role !== 'user') ? '전체' : a.open_all ? '전체 공개' : (a.code === 'ams' || a.uses_access === false) ? scopeLabel(scopeById[u.id]) : ((u.apps||{})[a.code] && u.apps[a.code].perm === 'use' ? '사용' + (u.apps[a.code].expires_at ? ' ~' + u.apps[a.code].expires_at : '') : '사용 안 함'))]));
 }
 function editAccess(uid, code){
   const u = ADM.access.find(x => x.id === uid), ap = regList().find(a => a.code === code); if(!u || !ap) return;
@@ -1875,7 +1876,7 @@ async function admPrograms(){
     <div class="tbl-wrap"><table class="t"><thead><tr><th>순서</th><th></th><th>이름</th><th>코드</th><th>버전</th><th>권한 방식</th><th>시스템 공개</th><th>세부 기능</th><th>주소</th><th></th></tr></thead><tbody>
     ${ADM.progs.map((p, i) => `<tr><td>${p.sort}</td><td><img src="${E(p.icon || 'icons/icon-192.png')}" alt="" style="width:30px;height:30px;border-radius:7px" onerror="this.style.display='none'"></td>
       <td><b>${E(p.name)}</b><br><small style="color:var(--mute)">${E(p.full_name)}</small></td><td>${E(p.code)}</td><td>${E(p.version || '-')}</td>
-      <td>${p.uses_access ? '프로그램별 권한' : '승인된 계정 모두'}</td>
+      <td>${p.open_all ? '<b>전체 공개</b>' : p.uses_access ? '프로그램별 권한' : '승인된 계정 모두'}</td>
       <td>${!p.visible ? '<span class="pill p-mute">비공개</span>' : p.beta ? '<span class="pill p-wait">시험 공개</span>' : '<span class="pill p-ok">공개</span>'}</td>
       <td class="wrap"><small>${(p.features || []).map(f => (p.features_on == null || p.features_on.includes(f.key) ? '✔ ' : '✕ ') + E(f.name)).join('<br>') || '-'}</small></td>
       <td class="wrap"><small>${E(p.url)}</small></td><td><button class="mini" data-i="${i}" ${isOwner() ? '' : 'disabled'}>수정</button></td></tr>`).join('')}</tbody></table></div>`;
@@ -1897,7 +1898,7 @@ function editProgram(p){
       <label class="p-f"><span>현재 버전</span><input id="pgV" value="${E(p.version)}" placeholder="예: 1.0.0"></label>
       <label class="p-f"><span>최소 버전</span><input id="pgM" value="${E(p.min_version)}"></label>
     </div>
-    <div class="seg" style="margin-top:8px"><label><input type="checkbox" id="pgB" ${p.beta ? 'checked' : ''}> 시험 공개 (제작자·관리자만)</label><label><input type="checkbox" id="pgS" ${p.visible ? 'checked' : ''}> 메뉴에 표시 (시스템 공개)</label><label><input type="checkbox" id="pgA" ${p.uses_access ? 'checked' : ''}> 프로그램별 권한 사용</label></div>
+    <div class="seg" style="margin-top:8px"><label><input type="checkbox" id="pgP" ${p.open_all ? 'checked' : ''}> 전체 공개 (로그인한 모든 계정 · 관리범위 · 조직 공개 지정 없이)</label><label><input type="checkbox" id="pgB" ${p.beta ? 'checked' : ''}> 시험 공개 (제작자·관리자만)</label><label><input type="checkbox" id="pgS" ${p.visible ? 'checked' : ''}> 메뉴에 표시 (시스템 공개)</label><label><input type="checkbox" id="pgA" ${p.uses_access ? 'checked' : ''}> 프로그램별 권한 사용</label></div>
     <label class="p-f" style="margin-top:8px"><span>세부 기능 — 한 줄에 「코드=이름」 (예: new=신규 견적) · 프로그램이 이 코드를 알아야 동작합니다</span><textarea id="pgFt" rows="3">${E((p.features || []).map(f => f.key + '=' + f.name).join('\n'))}</textarea></label>
     <div class="seg" id="pgFo">${(p.features || []).map(f => `<label><input type="checkbox" value="${E(f.key)}" ${p.features_on == null || p.features_on.includes(f.key) ? 'checked' : ''}> ${E(f.name)} 공개</label>`).join('')}</div>
     <div class="p-row"><button class="btn sec" id="pgX">취소</button>${n ? '' : '<button class="btn rd" id="pgD">삭제</button>'}<button class="btn" id="pgSv">저장</button></div>`);
@@ -1906,7 +1907,7 @@ function editProgram(p){
     const {error} = await SB.rpc('admin_delete_program', {p_code:p.code}); if(error){ admErr(error); return; } closePop(); toast('삭제했습니다'); ADM.progs = []; admTab('programs'); loadPrograms(); };
   $('pgSv').onclick = async () => {
     const v = {code:$('pgC').value.trim().toLowerCase(), name:$('pgN').value.trim(), full_name:$('pgF').value.trim(), url:$('pgU').value.trim(), icon:$('pgI').value.trim(), color:$('pgK').value,
-      sort:+$('pgO').value || 100, visible:$('pgS').checked, beta:$('pgB').checked, uses_access:$('pgA').checked, version:$('pgV').value.trim(), min_version:$('pgM').value.trim(), note:$('pgT').value.trim()};
+      sort:+$('pgO').value || 100, visible:$('pgS').checked, beta:$('pgB').checked, uses_access:$('pgP').checked ? false : $('pgA').checked, open_all:$('pgP').checked, version:$('pgV').value.trim(), min_version:$('pgM').value.trim(), note:$('pgT').value.trim()};
     v.features = $('pgFt').value.split(/\n/).map(l => l.trim()).filter(Boolean).map(l => { const i = l.indexOf('='); return i > 0 ? {key:l.slice(0, i).trim(), name:l.slice(i + 1).trim()} : {key:l, name:l}; });
     const onBoxes = [...document.querySelectorAll('#pgFo input')], offKeys = onBoxes.filter(c => !c.checked).map(c => c.value);
     v.features_on = offKeys.length ? v.features.map(f => f.key).filter(k => !offKeys.includes(k)) : null;
