@@ -10,6 +10,25 @@ const SETUP_URL = `https://github.com/${REPO}/releases/download/pc-latest/S-Tec-
 // 프로그램 안에서 열어도 되는 주소(12개 프로그램 · 로그인 서버) — 나머지는 기본 브라우저로
 const INSIDE = [/^https:\/\/sadness500-boop\.github\.io\//i, /^https:\/\/[a-z0-9-]+\.supabase\.co\//i];
 const inside = u => INSIDE.some(r => r.test(u));
+// 💻 PC 프로그램 사용 스위치 — 제작자가 관리 콘솔에서 켜면 PC 프로그램만 멈춤 (웹 · 안드로이드 앱은 그대로)
+const SB_URL = 'https://mnsuebexlzhvomxhrear.supabase.co', SB_KEY = 'sb_publishable_QAD9rHyR_zI8Oyl30VuXqw_tDof_Ctx';
+let BLOCK = { blocked: false, message: '' }, onBlockPage = false;
+async function pcStatus() {
+  try {
+    const r = await net.fetch(SB_URL + '/rest/v1/rpc/pc_status', { method: 'POST', cache: 'no-store',
+      headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }, body: '{}' });
+    if (r.ok) { const j = await r.json(); if (j && typeof j.blocked === 'boolean') BLOCK = j; }
+  } catch (e) { /* 확인을 못 하면 지난 상태 그대로 (인터넷이 없으면 어차피 화면이 안 열림) */ }
+  return BLOCK;
+}
+function showBlock() {
+  onBlockPage = true;
+  win.loadFile(path.join(__dirname, 'blocked.html'), { query: { m: BLOCK.message || '' } });
+}
+async function guard(url) {   // 화면을 열기 전에 확인
+  await pcStatus();
+  if (BLOCK.blocked) showBlock(); else { onBlockPage = false; win.loadURL(url || HOME); }
+}
 
 app.setAppUserModelId('kr.stecbest.operations.pc');
 if (!app.requestSingleInstanceLock()) { app.quit(); }
@@ -35,10 +54,10 @@ async function checkUpdate() {
 function buildMenu() {
   const t = [
     { label: '프로그램', submenu: [
-      { label: '처음 화면', accelerator: 'Alt+Home', click: () => win && win.loadURL(HOME) },
+      { label: '처음 화면', accelerator: 'Alt+Home', click: () => win && guard(HOME) },
       { label: '뒤로', accelerator: 'Alt+Left', click: () => win && win.webContents.navigationHistory.canGoBack() && win.webContents.navigationHistory.goBack() },
       { label: '앞으로', accelerator: 'Alt+Right', click: () => win && win.webContents.navigationHistory.canGoForward() && win.webContents.navigationHistory.goForward() },
-      { label: '새로고침', accelerator: 'F5', click: () => win && win.webContents.reload() },
+      { label: '새로고침', accelerator: 'F5', click: () => win && (onBlockPage ? guard(HOME) : win.webContents.reload()) },
       { label: '새로고침(저장된 화면 무시)', accelerator: 'Ctrl+F5', click: () => win && win.webContents.reloadIgnoringCache() },
       { type: 'separator' },
       { label: '인쇄', accelerator: 'Ctrl+P', click: () => win && win.webContents.print() },
@@ -49,7 +68,7 @@ function buildMenu() {
       { label: '원래 크기', accelerator: 'Ctrl+0', role: 'resetZoom' }, { type: 'separator' },
       { label: '전체 화면', accelerator: 'F11', role: 'togglefullscreen' } ] },
     { label: '도움말', submenu: [
-      { label: '사용자 매뉴얼', click: () => win && win.loadURL(HOME + 'manual.html') },
+      { label: '사용자 매뉴얼', click: () => win && guard(HOME + 'manual.html') },
       { label: '새 설치 파일 받기', click: () => shell.openExternal(SETUP_URL) },
       { label: `버전 정보 (v${app.getVersion()})`, click: () => dialog.showMessageBox(win, { type: 'info', title: '버전 정보',
           message: '에스텍 운영 및 영업 통합관리 시스템 — PC 프로그램', detail: `v${app.getVersion()}\n화면은 인터넷의 최신 버전을 불러옵니다.\n\nDesigned & Developed by Rat Rae Choi` }) } ] }
@@ -72,14 +91,22 @@ function createWindow() {
     if (/^(https?:|mailto:|tel:)/i.test(url)) shell.openExternal(url);
     return { action: 'deny' };
   });
-  win.webContents.on('will-navigate', (e, url) => { if (!inside(url) && /^https?:/i.test(url)) { e.preventDefault(); shell.openExternal(url); } });
+  win.webContents.on('will-navigate', (e, url) => {
+    if (!inside(url) && /^https?:/i.test(url)) { e.preventDefault(); shell.openExternal(url); return; }
+    if (onBlockPage || BLOCK.blocked) { e.preventDefault(); guard(url); }   // 멈춤 화면의 「다시 확인」 · 멈춤 중 이동
+  });
 
   // 인터넷이 끊겼을 때 안내 화면
   win.webContents.on('did-fail-load', (e, code, desc, url, isMain) => {
-    if (isMain && code !== -3) win.loadFile(path.join(__dirname, 'offline.html'), { query: { u: url || HOME } });
+    if (isMain && code !== -3 && !onBlockPage) win.loadFile(path.join(__dirname, 'offline.html'), { query: { u: url || HOME } });
   });
   win.on('page-title-updated', (e) => { e.preventDefault(); });
-  win.loadURL(HOME);
+  guard(HOME);
+  setInterval(async () => {   // 2분마다 스위치 확인
+    const was = BLOCK.blocked; await pcStatus();
+    if (BLOCK.blocked && !onBlockPage) { BrowserWindow.getAllWindows().forEach(w => { if (w !== win) w.close(); }); showBlock(); }
+    else if (!BLOCK.blocked && was && onBlockPage) guard(HOME);
+  }, 120000);
 }
 
 app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });

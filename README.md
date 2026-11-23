@@ -85,6 +85,11 @@ Designed & Developed by Rat Rae Choi
 - 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
 - `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
 
+#### v1.9.13 (PC 프로그램 사용 스위치)
+- PC 프로그램 사용 스위치(제작자만) — 제작자 관리 콘솔 › ⚙️ 전체 설정에서 윈도우 PC 프로그램만 멈추고 다시 열기 (웹 · 안드로이드 앱은 그대로)
+- 서버: `server/supabase_pc_switch.sql` (app_switches · pc_status() · owner_set_pc_switch()), PC 프로그램은 켤 때와 2분마다 확인 → 멈춤 안내 화면
+- `pc_min` 1.9.13 — 1.9.12를 설치한 PC는 켤 때 새 설치 파일 안내
+
 #### v1.9.12 (윈도우 PC 프로그램)
 - 윈도우 PC 프로그램(설치 파일 .exe) — 바탕화면 「에스텍 통합관리」 아이콘으로 실행, 「📲 다운로드」에서 내려받기
 - `desktop/` (Electron) · `.github/workflows/windows-pc.yml` → 릴리스 `pc-latest` 의 `S-Tec-Operations-PC-Setup.exe`
