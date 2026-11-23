@@ -1,0 +1,37 @@
+{
+  "name": "s-tec-operations-pc",
+  "productName": "S-Tec Operations",
+  "version": "1.9.11",
+  "private": true,
+  "description": "에스텍 운영 및 영업 통합관리 시스템 — 윈도우 PC 프로그램. Designed & Developed by Rat Rae Choi",
+  "author": "Rat Rae Choi",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "kr.stecbest.operations.pc",
+    "productName": "S-Tec Operations",
+    "copyright": "Designed & Developed by Rat Rae Choi",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "offline.html", "build/icon.png"],
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "icon": "build/icon.png" },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "에스텍 통합관리",
+      "uninstallDisplayName": "에스텍 운영 및 영업 통합관리 시스템",
+      "artifactName": "S-Tec-Operations-PC-Setup_v${version}.${ext}",
+      "language": "1042",
+      "installerLanguages": ["ko_KR"]
+    }
+  }
+}

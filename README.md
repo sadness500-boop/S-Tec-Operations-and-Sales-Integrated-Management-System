@@ -85,6 +85,11 @@ Designed & Developed by Rat Rae Choi
 - 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
 - `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
 
+#### v1.9.12 (윈도우 PC 프로그램)
+- 윈도우 PC 프로그램(설치 파일 .exe) — 바탕화면 「에스텍 통합관리」 아이콘으로 실행, 「📲 다운로드」에서 내려받기
+- `desktop/` (Electron) · `.github/workflows/windows-pc.yml` → 릴리스 `pc-latest` 의 `S-Tec-Operations-PC-Setup.exe`
+- 프로그램은 GitHub Pages 의 최신 화면을 불러오므로 화면 수정 때는 다시 설치하지 않아도 됨. 설치 파일을 꼭 새로 받게 하려면 version.json 에 `pc_min` 을 적음
+
 #### v1.9.11 (전체 공개 프로그램)
 - 오늘의 뽑기판 · 팔도 제철맛길 · 팔도 축제길 「전체 공개」 — 관리범위 · 조직 공개 지정 없이 로그인한 모든 계정이 사용 (프로그램 등록에 「전체 공개」 체크 추가)
 - 서버: `server/supabase_open_all.sql` (program_registry.open_all)

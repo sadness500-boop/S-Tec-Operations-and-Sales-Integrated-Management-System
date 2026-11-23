@@ -5,3 +5,5 @@ assets/icon-only.png
 assets/icon-foreground.png
 assets/icon-background.svg
 stim-latest.apk
+desktop/node_modules/
+desktop/dist/
