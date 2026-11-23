@@ -3450,6 +3450,7 @@ const REPO = 'sadness500-boop/S-Tec-Operations-and-Sales-Integrated-Management-S
 const INSTALL_URL = WEB_URL + 'install.html';
 const APK_URL = `https://github.com/${REPO}/releases/download/app-latest/stim-latest.apk`;
 const PC_URL = `https://github.com/${REPO}/releases/download/pc-latest/S-Tec-Operations-PC-Setup.exe`;
+const PC_ZIP = `https://github.com/${REPO}/releases/download/pc-latest/S-Tec-Operations-PC-Setup.zip`;
 /* 11개 프로그램이 함께 쓰는 서버 — auth-config.json 을 먼저 읽고, 없으면 아래 값을 씁니다.
    (publishable 키는 공개해도 되는 키입니다. secret/service_role 키는 절대 넣지 않습니다.) */
 const AUTH_EMBED = { enabled:true, supabaseUrl:'https://mnsuebexlzhvomxhrear.supabase.co', supabaseAnonKey:'sb_publishable_QAD9rHyR_zI8Oyl30VuXqw_tDof_Ctx' };
@@ -3828,7 +3829,8 @@ $('btnQr').onclick = () => {
   pop(`<h3>📲 다운로드 QR</h3><p>휴대폰 카메라로 찍으면 <b>기기별 설치 안내</b>가 열립니다.<br>· 안드로이드: 열린 화면에서 <b>앱 설치(APK)</b> 안내를 따르세요<br>· 아이폰: 사파리 공유 버튼 → <b>홈 화면에 추가</b></p>
     <div class="qr" id="qrBox"></div><div class="copy"><input id="qrUrl" readonly value="${E(WEB_URL)}"><button class="btn sm" id="qrCp">복사</button></div>
     <div class="p-row"><a class="btn gr" style="text-align:center;text-decoration:none" href="${E(APK_URL)}" target="_blank" rel="noopener">🤖 안드로이드 앱(APK) 내려받기</a></div>
-    <div class="p-row"><a class="btn" style="text-align:center;text-decoration:none" href="${E(PC_URL)}" target="_blank" rel="noopener">💻 윈도우 PC 프로그램(설치 파일) 내려받기</a></div>
+    <div class="p-row"><a class="btn" style="text-align:center;text-decoration:none" href="${E(PC_URL)}" target="_blank" rel="noopener">💻 윈도우 PC 프로그램(설치 파일) 내려받기</a><a class="btn sec" style="text-align:center;text-decoration:none" href="${E(PC_ZIP)}" target="_blank" rel="noopener" title="회사 보안 · 브라우저가 .exe를 막을 때 — 압축을 푼 뒤 실행">📦 ZIP으로 받기</a></div>
+    <p style="font-size:12.5px;color:var(--mute);margin:4px 0 0">PC 프로그램이 안 받아지면: 브라우저 다운로드 목록(Ctrl+J)에서 「…」 → <b>유지</b>(엣지) · <b>계속</b>(크롬)을 누르거나, 「ZIP으로 받기」 후 압축을 풀어 실행하세요. 실행 때 「Windows의 PC 보호」가 나오면 「추가 정보 → 실행」.</p>
     <div class="p-row">${PWA.ev ? '<button class="btn" id="qInst">💻 이 PC에 앱으로 설치</button>' : ''}<a class="btn sec" style="text-align:center;text-decoration:none" href="${E(INSTALL_URL)}" target="_blank" rel="noopener">📘 기기별 설치 안내</a></div>
     <div class="p-row"><button class="btn sec" id="qX">닫기</button></div>`);
   try{ $('qrBox').appendChild(qrCanvas(INSTALL_URL, 220)); }catch(e){ $('qrBox').textContent = 'QR을 만들지 못했습니다'; }

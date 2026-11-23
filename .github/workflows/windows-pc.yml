@@ -51,6 +51,8 @@ jobs:
           V=${{ steps.ver.outputs.v }}
           ls -la dist
           cp "dist/S-Tec-Operations-PC-Setup_v$V.exe" dist/S-Tec-Operations-PC-Setup.exe
+          # 회사 보안 · 브라우저가 .exe 내려받기를 막을 때를 위한 압축본
+          (cd dist && 7z a -tzip -mx=1 S-Tec-Operations-PC-Setup.zip S-Tec-Operations-PC-Setup.exe)
 
       - uses: actions/upload-artifact@v4
         with:
@@ -64,11 +66,12 @@ jobs:
           name: 에스텍 통합관리 — 윈도우 PC 프로그램 (최신)
           body: |
             윈도우 PC 설치 파일입니다. 현재 버전 v${{ steps.ver.outputs.v }}.
-            1) S-Tec-Operations-PC-Setup.exe 를 내려받아 실행합니다.
+            1) S-Tec-Operations-PC-Setup.exe 를 내려받아 실행합니다. (회사 보안 · 브라우저가 .exe를 막으면 S-Tec-Operations-PC-Setup.zip 을 받아 압축을 푼 뒤 실행)
             2) 「Windows의 PC 보호」 창이 나오면 「추가 정보 → 실행」을 누릅니다(회사 전용 프로그램이라 서명 인증서가 없어 나오는 안내입니다).
             3) 설치가 끝나면 바탕화면 「에스텍 통합관리」 아이콘으로 실행합니다.
             화면은 인터넷의 최신 버전을 불러오므로, 프로그램을 다시 설치할 일은 거의 없습니다.
           files: |
             desktop/dist/S-Tec-Operations-PC-Setup.exe
+            desktop/dist/S-Tec-Operations-PC-Setup.zip
             desktop/dist/S-Tec-Operations-PC-Setup_v${{ steps.ver.outputs.v }}.exe
           make_latest: false
