@@ -85,6 +85,11 @@ Designed & Developed by Rat Rae Choi
 - 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
 - `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
 
+#### v1.10.0 (사전 등록 · 가입 없이 체험)
+- 사전 등록(초대 링크로 승인 없이 바로 가입) · 가입 없이 체험(기본 7일, 체험 허용 프로그램 중 1개) · 체험자에게 회사 기준정보 숨김 · 체험 → 가입 때 자료 이어 쓰기
+- 관리 콘솔 「👤 사전 등록 · 체험」 탭(제작자 · 관리자 · 가입 승인 권한이 있는 조직 관리자), 🧩 프로그램 등록에 「🎁 체험 허용」
+- 서버: `server/supabase_trial_invite.sql` + Supabase Authentication › Allow anonymous sign-ins
+
 #### v1.9.13 (PC 프로그램 사용 스위치)
 - PC 프로그램 사용 스위치(제작자만) — 제작자 관리 콘솔 › ⚙️ 전체 설정에서 윈도우 PC 프로그램만 멈추고 다시 열기 (웹 · 안드로이드 앱은 그대로)
 - 서버: `server/supabase_pc_switch.sql` (app_switches · pc_status() · owner_set_pc_switch()), PC 프로그램은 켤 때와 2분마다 확인 → 멈춤 안내 화면

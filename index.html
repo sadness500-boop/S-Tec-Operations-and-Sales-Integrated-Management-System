@@ -186,6 +186,12 @@ html[data-theme="dark"] .tag{color:color-mix(in srgb,var(--c) 45%,#fff);backgrou
 .g-btn:disabled{opacity:.6}
 .g-btn.sec{background:#E3E8FA;color:#0B1F8A}
 .g-links{display:flex;justify-content:space-between;font-size:13px;margin-top:12px;color:#4A5BA8}
+.g-trial{margin-top:16px;padding-top:14px;border-top:1px dashed #C9D2EA;text-align:center}.g-trial small{display:block;margin-top:6px;color:#5D6678;font-size:12px;line-height:1.5}
+.trial-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px;padding:12px 16px;border-radius:14px;background:linear-gradient(90deg,#FFF6E0,#FFFBF0);border:1px solid #F2D58A;color:#5A4200;font-size:14px}
+.trial-bar b{color:#8A5A00}.trial-bar .btn{margin-left:auto;width:auto}
+html[data-theme="dark"] .trial-bar{background:#3A3016;border-color:#6B5A23;color:#F4E3B5}html[data-theme="dark"] .trial-bar b{color:#FFD979}
+.inv-out{background:var(--card2,#F5F7FC);border:1px solid var(--line,#DDE3F0);border-radius:12px;padding:12px;margin:10px 0}
+.inv-out textarea{width:100%;min-height:90px;font:inherit;font-size:13px}
 .g-links a{cursor:pointer;text-decoration:underline}
 .g-msg{display:none;border-radius:10px;padding:9px 12px;font-size:13px;margin:8px 0}
 .g-msg.on{display:block}.g-msg.err{background:#FDECEA;color:#B3261E}.g-msg.ok{background:#E9F5EC;color:#17552F}.g-msg.info{background:#EEF1FB;color:#26357A}
@@ -509,7 +515,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.9.13';
+const APP_VERSION = '1.10.0';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -561,6 +567,9 @@ const REASON = {
   device_pending:['📲','새 기기 승인 대기','처음 사용하는 기기입니다. 제작자(관리자)가 관리 콘솔 「기기」에서 이 기기를 승인하면 바로 사용할 수 있습니다.<br>승인 후 <b>다시 확인</b>을 누르세요.'],
   locked:['🛠️','프로그램 점검 중',''],
   no_profile:['❓','계정 정보 없음','계정 정보가 아직 만들어지지 않았습니다. 잠시 뒤 다시 시도하거나 제작자에게 문의하세요.'],
+  trial_ended:['🎁','체험 기간이 끝났습니다','가입 없이 체험한 기간이 끝났습니다. <b>가입 신청</b>을 하면 체험 중 쓰던 자료를 그대로 이어서 쓸 수 있습니다.'],
+  trial_used:['🎁','이미 체험한 기기','이 기기에서는 이미 체험을 사용했습니다. 계속 쓰려면 <b>가입 신청</b>을 하세요.'],
+  trial_closed:['🎁','체험 받기 중지','지금은 가입 없이 체험하기를 받지 않습니다. <b>가입 신청</b>을 하세요.'],
   offline:['📶','인터넷 연결 필요','로그인 확인을 위해 인터넷 연결이 필요합니다. 연결 후 다시 시도하세요.'],
   server:['⚙️','서버 확인 필요','서버에서 오류가 났습니다. 잠시 후 다시 시도하세요.']
 };
@@ -618,6 +627,7 @@ $('verTag').textContent = 'v' + APP_VERSION;
    서버 연결
    ===================================================================== */
 let SB = null, PROFILE = null, PUB = {signup_open:true}, PROGRAMS = [], REG_SERVER = false, recoveryMode = false;
+let INVITE = null, HANDOFF = lsGet('stim_handoff') || '', TRIAL = null;   // 초대 가입 · 체험 → 가입 전환 · 체험 상태
 
 async function loadConfig(){
   for(const src of ['auth-config.json']){
@@ -648,8 +658,11 @@ function viewLogin(note){
       <label class="g-f"><span>이 기기 이름 (접속기록에 표시)</span><input id="lDev" maxlength="30" value="${E(deviceName())}" placeholder="예: 회사 PC, 휴대폰"></label>
       <button class="g-btn" id="lGo" type="submit">로그인</button>
     </form>
-    <div class="g-links"><a id="toSignup">${PUB.signup_open === false ? '' : '처음이세요? 가입 신청'}</a><a id="toForgot">비밀번호를 잊었어요</a></div>` + SIGN;
+    <div class="g-links"><a id="toSignup">${PUB.signup_open === false ? '' : '처음이세요? 가입 신청'}</a><a id="toForgot">비밀번호를 잊었어요</a></div>
+    ${trialOpen() ? `<div class="g-trial"><button class="g-btn sec" id="lTrial" type="button">🎁 가입 없이 ${E(PUB.trial_days || 7)}일 체험하기</button>
+      <small>${(PUB.trial_apps || []).length ? `체험할 수 있는 프로그램: ${(PUB.trial_apps || []).map(a => E(a.name)).join(' · ')} — 이 중 <b>1개</b>를 골라 씁니다.` : '체험할 수 있는 프로그램 1개를 골라 씁니다.'}<br>체험 뒤 가입 신청하면 쓰던 자료가 이어집니다.</small></div>` : ''}` + SIGN;
   if(note) gmsg(note[0], note[1]);
+  if($('lTrial')) $('lTrial').onclick = startTrial;
   const last = lsGet(LS.last); if(last) $('lEmail').value = last;
   $('fLogin').onsubmit = async e => { e.preventDefault(); await doLogin(); };
   $('toSignup').onclick = () => { if(PUB.signup_open !== false) viewSignup(); };
@@ -657,8 +670,9 @@ function viewLogin(note){
 }
 function viewSignup(){
   lock();
+  const iv = INVITE && INVITE.info;
   $('gBox').innerHTML = BRAND + `
-    <h2>가입 신청</h2><p class="g-sub">신청 후 <b>소속 조직 관리자(없으면 제작자)가 승인</b>해야 사용할 수 있습니다. 비밀번호는 암호화되어 저장되며 제작자도 볼 수 없습니다.</p>
+    <h2>${iv ? '초대받은 가입' : '가입 신청'}</h2><p class="g-sub">${iv ? `<b>${E(iv.org_path || '에스텍 그룹')}</b>에서 미리 등록했습니다. 비밀번호만 정하면 <b>승인 없이 바로</b> 사용할 수 있습니다.` : HANDOFF ? '체험 중 쓰던 자료는 가입하면 <b>새 계정으로 그대로 옮겨집니다</b>. 소속 조직 관리자(없으면 제작자)가 승인하면 사용할 수 있습니다.' : '신청 후 <b>소속 조직 관리자(없으면 제작자)가 승인</b>해야 사용할 수 있습니다.'} 비밀번호는 암호화되어 저장되며 제작자도 볼 수 없습니다.</p>
     <div id="gMsg" class="g-msg"></div>
     <form id="fSign">
       <label class="g-f"><span>이름</span><input id="sName" required maxlength="30" placeholder="홍길동"></label>
@@ -670,9 +684,14 @@ function viewSignup(){
       <button class="g-btn" id="sGo" type="submit">가입 신청</button>
     </form>
     <div class="g-links"><a id="toLogin">← 로그인으로</a><span></span></div>` + SIGN;
-  $('toLogin').onclick = () => viewLogin();
+  $('toLogin').onclick = () => { INVITE = null; viewLogin(); };
   $('fSign').onsubmit = async e => { e.preventDefault(); await doSignup(); };
-  signupOrgUi();
+  if(iv){   // 초대: 미리 적힌 내용 · 소속은 초대에 정해져 있음
+    $('sName').value = iv.name || ''; $('sPhone').value = iv.phone || '';
+    if(iv.email){ $('sEmail').value = iv.email; $('sEmail').readOnly = true; }
+    $('sOrgWrap').innerHTML = `<label class="g-f"><span>소속 (초대에 정해짐)</span><input value="${E(iv.org_path || '-')}" readonly></label><input type="hidden" id="sDept" value="${E(iv.dept || '')}">`;
+    $('sGo').textContent = '가입하고 바로 시작';
+  } else signupOrgUi();
 }
 function viewForgot(){
   lock();
@@ -725,8 +744,10 @@ function viewBlocked(reason, extra){
   const who = extra && extra.profile ? `<p class="g-sub" style="text-align:center">${E(extra.profile.name||'')} · ${E(extra.profile.email||'')}</p>` : '';
   $('gBox').innerHTML = BRAND + `<div class="g-big">${r[0]}</div><h2 style="text-align:center">${r[1]}</h2>${who}
     <div class="g-msg on info" style="text-align:center">${body}</div>
-    <button class="g-btn" id="bRe">다시 확인</button><button class="g-btn sec" id="bOut">${reason === 'offline' ? '다른 계정으로 로그인' : '로그아웃'}</button>` + SIGN;
+    ${/^trial_/.test(reason) ? '<button class="g-btn" id="bJoin">📝 가입 신청 (체험 자료 이어 쓰기)</button>' : ''}
+    <button class="g-btn${/^trial_/.test(reason) ? ' sec' : ''}" id="bRe">다시 확인</button><button class="g-btn sec" id="bOut">${reason === 'offline' ? '다른 계정으로 로그인' : /^trial_/.test(reason) ? '체험 끝내기' : '로그아웃'}</button>` + SIGN;
   $('bRe').onclick = () => boot();
+  if($('bJoin')) $('bJoin').onclick = trialApply;
   $('bOut').onclick = () => logout(true);
 }
 
@@ -748,15 +769,18 @@ async function doSignup(){
   const name = $('sName').value.trim(), phone = $('sPhone').value.trim();
   const em = $('sEmail').value.trim().toLowerCase(), pw = $('sPw').value, pw2 = $('sPw2').value;
   if(pw !== pw2){ gmsg('err','두 비밀번호가 다릅니다.'); return; }
-  const ov = await signupOrgValue(); if(ov.err){ gmsg('err', E(ov.err)); return; }
+  const ov = INVITE ? {dept:($('sDept') && $('sDept').value) || ''} : await signupOrgValue(); if(ov.err){ gmsg('err', E(ov.err)); return; }
   const dept = ov.dept || '', meta = {name, dept, phone}; if(ov.org_id){ meta.org_id = ov.org_id; meta.join_code = ov.join_code || ''; }
+  if(INVITE) meta.invite = INVITE.token;
+  if(HANDOFF) meta.trial_handoff = HANDOFF;
   const b = $('sGo'); busy(b, true, '신청 중…');
   const {data, error} = await SB.auth.signUp({email:em, password:pw, options:{data:meta, emailRedirectTo: /^https?:/.test(location.protocol) ? location.origin + location.pathname : WEB_URL}});
   busy(b, false, '가입 신청');
   if(error){ gmsg('err', E(errKo(error.message))); return; }
-  lsSet(LS.last, em);
+  lsSet(LS.last, em); const wasInv = !!INVITE; INVITE = null; HANDOFF = ''; lsDel('stim_handoff');
+  try{ if(/[?&]invite=/.test(location.search)) history.replaceState(null, '', location.pathname); }catch(e){}
   if(data && data.session){ lsSet(LS.loginAt, new Date().toISOString()); await checkin('login'); }
-  else viewLogin(['ok','가입 신청이 접수되었습니다. <b>메일함의 인증 링크</b>를 먼저 누른 뒤 로그인하세요. 소속 조직 관리자(없으면 제작자)가 승인하면 사용할 수 있습니다.']);
+  else viewLogin(['ok', wasInv ? '가입되었습니다. <b>메일함의 인증 링크</b>를 누른 뒤 로그인하면 바로 사용할 수 있습니다.' : '가입 신청이 접수되었습니다. <b>메일함의 인증 링크</b>를 먼저 누른 뒤 로그인하세요. 소속 조직 관리자(없으면 제작자)가 승인하면 사용할 수 있습니다.']);
 }
 async function logout(showLogin){
   try{ if(SB){ await SB.rpc('log_logout', {p_device:deviceId(), p_device_name:deviceName()}); await SB.auth.signOut({scope:'local'}); } }catch(e){}
@@ -811,7 +835,8 @@ function renderHome(note){
   $('heroHi').textContent = `안녕하세요, ${p.name || p.email || ''} 님` + (note ? ` · ${note}` : '');
   $('heroMeta').textContent = `${ROLE_KO[p.role] || '사용자'}${p.dept ? ' · ' + p.dept : ''} · 하나의 아이디로 에스텍 프로그램을 사용합니다`;
   $('stScope').textContent = p.role === 'owner' ? '에스텍 그룹 전체 (제작자)' : p.role === 'admin' ? '전체 (관리자)' : '근태관리: ' + scopeLabel(p.scope);
-  $('stExp').textContent = p.expires_at ? `${p.expires_at} 까지` : '무기한';
+  $('stExp').textContent = p.is_trial ? `체험 ${p.expires_at || ''} 까지` : p.expires_at ? `${p.expires_at} 까지` : '무기한';
+  if(p.is_trial){ $('heroMeta').textContent = '🎁 가입 없이 체험 중 · 체험 허용 프로그램 1개를 골라 씁니다'; $('stScope').textContent = '체험 (본인 자료만)'; }
   $('stDev').textContent = `${deviceName()} ✔ 승인`;
   $('acctTx').textContent = p.name || '내 계정';
   $('btnAdm').classList.toggle('hidden', !canConsole());
@@ -823,7 +848,7 @@ async function loadPrograms(){
   try{
     const {data, error} = await SB.rpc('my_programs');
     if(error) throw error;
-    if(data && data.ok){ list = data.programs || []; REG_SERVER = true; }
+    if(data && data.ok){ list = data.programs || []; REG_SERVER = true; TRIAL = data.trial || null; }
   }catch(e){ if(!isMissingFn(e)) console.warn('my_programs', e); REG_SERVER = false; }
   if(!list){
     /* 서버에 프로그램 등록부 SQL이 아직 없을 때: 기본 목록 + 프로그램마다 app_check */
@@ -839,22 +864,24 @@ async function loadPrograms(){
     }));
   }
   PROGRAMS = list; lsSet(LS.progs, JSON.stringify(list));
-  renderGrid();
+  renderGrid(); trialBar();
 }
 function renderGrid(){
   const g = $('grid');
   const cards = PROGRAMS.map(pg => {
-    const ok = pg.access === 'use' || pg.access === 'unknown';
+    const ok = pg.access === 'use' || pg.access === 'unknown', tp = pg.access === 'trial_pick';
     const tag = pg.access === 'use' ? `<span class="tag${pg.extra ? ' star' : ''}">${pg.extra ? '⭐ 제작자 추가' : '● 사용 가능'}${pg.app_expires_at ? ' · ~' + E(pg.app_expires_at) : ''}</span>`
       : pg.access === 'expired' ? `<span class="tag exp">기한 만료 ${E(pg.app_expires_at||'')}</span>`
-      : pg.access === 'unknown' ? `<span class="tag off">확인 중</span>` : `<span class="tag off">🔒 권한 없음</span>`;
+      : pg.access === 'unknown' ? `<span class="tag off">확인 중</span>`
+      : pg.access === 'trial_pick' ? `<span class="tag star">🎁 체험 가능</span>`
+      : pg.access === 'trial_locked' ? `<span class="tag off">🔒 가입 후 사용</span>` : `<span class="tag off">🔒 권한 없음</span>`;
     const icon = pg.icon ? (/^https?:|^data:/.test(pg.icon) ? pg.icon : pg.icon) : 'icons/icon-192.png';
-    return `<button class="card ${ok ? '' : 'dis'}" style="--c:${E(pg.color||'#0B1F8A')}" data-code="${E(pg.code)}">
+    return `<button class="card ${ok || tp ? '' : 'dis'}" style="--c:${E(pg.color||'#0B1F8A')}" data-code="${E(pg.code)}">
       ${pg.beta ? '<span class="ribbon">시험 공개</span>' : ''}
       <div class="bar"></div><div class="bd">
         <div class="row1"><img class="ico" src="${E(icon)}" alt="" onerror="this.src='icons/icon-192.png'"><div><h3 lang="en">${E(pg.full_name || pg.name)}</h3><div class="ko">${E(pg.full_name ? pg.name : '')}</div></div></div>
         <div class="desc">${E(pg.note||'')}${pg.branches && pg.branches.length ? ` · 담당 ${E(pg.branches.join('·'))}지사` : ''}</div>
-        <div class="foot">${tag}<span class="go">${ok ? '열기 <span aria-hidden="true">→</span>' : '권한 요청'}</span></div>
+        <div class="foot">${tag}<span class="go">${ok ? '열기 <span aria-hidden="true">→</span>' : pg.access === 'trial_pick' ? '체험하기 →' : pg.access === 'trial_locked' ? '가입 신청' : '권한 요청'}</span></div>
       </div></button>`;
   });
   if(isOwner()) cards.push(`<button class="card add" id="addSlot"><div class="plus">＋</div><div>새 프로그램<br>추가 슬롯</div><small style="font-weight:400;font-size:12px;margin-top:6px">관리 콘솔 › 프로그램 등록</small></button>`);
@@ -873,6 +900,7 @@ function roBanner(on){
 }
 async function openProgram(code){
   const pg = PROGRAMS.find(x => x.code === code); if(!pg) return;
+  if(pg.access === 'trial_pick' || pg.access === 'trial_locked'){ trialCard(pg); return; }
   if(pg.access !== 'use' && pg.access !== 'unknown'){
     pop(`<h3>🔒 ${E(pg.full_name || pg.name)}</h3><p><b>${E(PROFILE.name || PROFILE.email)}</b> 님의 계정은 승인되었지만 「${E(pg.full_name || pg.name)}」 사용 권한이 ${pg.access === 'expired' ? `<b>${E(pg.app_expires_at)}</b>에 끝났습니다` : '아직 지정되지 않았습니다'}.</p>
       <p>제작자(관리자)에게 <b>프로그램별 권한</b>을 요청하세요.</p><div class="p-row"><button class="btn sec" id="pX">닫기</button></div>`);
@@ -882,6 +910,151 @@ async function openProgram(code){
   if(DEMO){ toast(`데모 모드: 「${pg.full_name || pg.name}」을(를) 엽니다`); return; }
   try{ await Promise.race([SB.rpc('log_app_open', {p_app:code, p_device:deviceId(), p_device_name:deviceName()}), new Promise(r => setTimeout(r, 900))]); }catch(e){}
   location.href = pg.url;
+}
+
+
+/* =====================================================================
+   🎁 가입 없이 체험 · 👤 사전 등록(초대) — v1.10.0
+   서버 함수: public_settings(trial_*) · trial_pick · trial_handoff · my_programs(trial) ·
+              invite_create · invite_list · invite_revoke · invite_info · admin_list_trials · admin_trial_update · owner_save_trial_settings
+   ===================================================================== */
+const trialOpen = () => PUB.trial_open !== false && PUB.trial_open !== undefined && !DEMO;
+async function startTrial(){
+  const days = PUB.trial_days || 7;
+  if(!confirmBox(`가입 없이 ${days}일 동안 체험합니다.\n\n· 체험 허용 프로그램 중 1개를 골라 씁니다\n· 회사 기준정보(조직·사업장 목록)는 보이지 않고 본인이 입력한 자료만 보입니다\n· 체험 뒤 「가입 신청」을 하면 쓰던 자료가 새 계정으로 이어집니다\n\n시작할까요?`)) return;
+  const b = $('lTrial'); busy(b, true, '체험 준비 중…');
+  const {error} = await SB.auth.signInAnonymously({options:{data:{trial:true}}});
+  if(error){ busy(b, false, '🎁 가입 없이 체험하기');
+    gmsg('err', /anonymous/i.test(error.message) ? '지금은 체험하기를 쓸 수 없습니다(서버에서 익명 체험이 꺼져 있음). 가입 신청을 해 주세요.' : E(errKo(error.message))); return; }
+  lsSet(LS.loginAt, new Date().toISOString());
+  await checkin('login');
+}
+/* 체험 → 가입 신청: 자료를 넘길 표를 받고, 체험 로그인을 끝낸 뒤 가입 화면으로 */
+async function trialApply(){
+  try{ const {data, error} = await SB.rpc('trial_handoff'); if(!error && data){ HANDOFF = data; lsSet('stim_handoff', data); } }catch(e){}
+  try{ await SB.auth.signOut({scope:'local'}); }catch(e){}
+  PROFILE = null; TRIAL = null; lsDel(LS.okAt); lsDel(LS.prof); lsDel(LS.loginAt); closePop(); closeAdmin();
+  viewSignup();
+}
+function trialBar(){
+  let b = $('trialBar'); const p = PROFILE || {};
+  if(!p.is_trial){ if(b) b.remove(); return; }
+  if(!b){ b = document.createElement('div'); b.id = 'trialBar'; b.className = 'trial-bar'; const g = $('grid'); g.parentNode.insertBefore(b, g); }
+  const t = TRIAL || {}, app = t.app && PROGRAMS.find(x => x.code === t.app);
+  b.innerHTML = `<span>🎁 <b>가입 없이 체험 중</b> · ${t.days_left != null ? `<b>${E(t.days_left)}일</b> 남음 (~${E(t.until || p.expires_at || '')})` : E(p.expires_at || '')}
+    · ${app ? `체험 프로그램: <b>${E(app.full_name || app.name)}</b>` : '아래에서 <b>🎁 체험 가능</b> 프로그램 1개를 고르세요'}</span>
+    <button class="btn" id="tbJoin">📝 가입 신청</button>`;
+  $('tbJoin').onclick = () => { if(confirmBox('가입 신청 화면으로 갑니다.\n가입하면 체험 중 쓰던 자료가 새 계정으로 옮겨집니다.')) trialApply(); };
+}
+function trialCard(pg){
+  const days = TRIAL && TRIAL.days_left;
+  if(pg.access === 'trial_pick'){
+    pop(`<h3>🎁 ${E(pg.full_name || pg.name)} 체험</h3><p>체험은 <b>프로그램 1개만</b> 쓸 수 있습니다. 이 프로그램을 고르면 체험 기간${days != null ? `(<b>${E(days)}일</b> 남음)` : ''} 동안 이 프로그램만 쓰고, 나머지는 가입 후에 열립니다.</p>
+      <p style="color:var(--mute);font-size:13px">회사 기준정보(조직·사업장 목록)는 보이지 않으며 본인이 입력한 자료만 보입니다.</p>
+      <div class="p-row"><button class="btn" id="tcGo">이 프로그램으로 체험 시작</button><button class="btn sec" id="tcX">다시 고르기</button></div>`);
+    $('tcX').onclick = closePop;
+    $('tcGo').onclick = async () => {
+      const {error} = await SB.rpc('trial_pick', {p_app:pg.code}); if(error){ toast(errKo(error.message)); return; }
+      closePop(); await loadPrograms(); openProgram(pg.code); };
+    return;
+  }
+  pop(`<h3>🔒 ${E(pg.full_name || pg.name)}</h3><p>체험 중에는 고른 프로그램 1개만 쓸 수 있습니다. 「${E(pg.full_name || pg.name)}」은(는) <b>가입 후</b> 소속 조직에 열린 프로그램으로 쓸 수 있습니다.</p>
+    <div class="p-row"><button class="btn" id="tcJ">📝 가입 신청</button><button class="btn sec" id="tcX">닫기</button></div>`);
+  $('tcX').onclick = closePop; $('tcJ').onclick = () => { closePop(); trialApply(); };
+}
+/* 초대 링크로 들어온 경우 (?invite=…) */
+async function viewInvite(tok){
+  viewLoading('초대 확인 중…');
+  let info = null;
+  try{ const {data, error} = await SB.rpc('invite_info', {p_token:tok}); if(!error) info = data; }catch(e){}
+  if(!info || !info.ok){
+    const why = {used:'이미 가입에 쓴 초대입니다. 로그인하세요.', revoked:'취소된 초대입니다. 등록한 담당자에게 다시 요청하세요.', expired:'초대 기간(30일)이 지났습니다. 담당자에게 다시 요청하세요.'}[info && info.reason] || '초대를 찾지 못했습니다. 링크를 다시 확인하세요.';
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+    viewLogin(['err', why]); return;
+  }
+  INVITE = {token:tok, info}; viewSignup();
+}
+function inviteUrl(tok){ return WEB_URL + (WEB_URL.includes('?') ? '&' : '?') + 'invite=' + encodeURIComponent(tok); }
+function inviteText(x){ return `[에스텍 통합관리 초대]\n${x.name} 님, ${x.org_path ? x.org_path + '에서 ' : ''}에스텍 통합관리 프로그램에 미리 등록했습니다.\n아래 링크를 열어 비밀번호만 정하면 승인 없이 바로 쓸 수 있습니다. (30일 안에 가입)\n${inviteUrl(x.token)}`; }
+
+/* 👤 사전 등록 · 체험 (관리 콘솔) */
+async function admInvite(){
+  if(isAdmin() || mperm('create_sub') || mperm('create_company') || mperm('import') || mperm('approve')){ try{ if(!ORGS.length) await loadOrgs(); }catch(e){} }
+  const mine = ORGI && ORGI.manager ? ORGI.manager.orgs || [] : [];
+  const orgSel = orgOptions('', {filter: o => isAdmin() || orgUnder(o.id, mine)});
+  const progs = (PROGRAMS || []).filter(p => p.uses_access && !p.open_all);
+  const {data:list, error} = await SB.rpc('invite_list');
+  const body = $('admBody');
+  if(error){ body.innerHTML = `<div class="note warn">사전 등록을 쓰려면 Supabase에서 <b>server/supabase_trial_invite.sql</b>을 먼저 실행하세요.<br><small>${E(error.message)}</small></div>`; return; }
+  const st = x => x.used_at ? `<span class="pill p-ok">✅ 가입함</span><small>${E(x.used_email || '')}</small>` : x.revoked ? '<span class="pill p-mute">취소</span>' : x.expired ? '<span class="pill p-mute">기간 지남</span>' : '<span class="pill p-wait">⏳ 가입 전</span>';
+  body.innerHTML = `<div class="note">👤 <b>사전 등록</b> — 사람을 미리 등록하고 <b>초대 링크</b>를 보내면, 받은 사람은 비밀번호만 정하고 <b>승인 없이 바로</b> 씁니다. (링크는 30일, 1회용)${isAdmin() ? '' : '<br>조직 관리자는 <b>맡은 조직</b>에만 등록할 수 있습니다.'}</div>
+    <div class="form-grid">
+      <label class="p-f"><span>이름 *</span><input id="ivName" maxlength="30" placeholder="홍길동"></label>
+      <label class="p-f"><span>이메일 (적으면 이 이메일로만 가입)</span><input id="ivEmail" type="email" placeholder="비우면 링크를 받은 사람이 직접 적음"></label>
+      <label class="p-f"><span>연락처</span><input id="ivPhone" maxlength="20" placeholder="010-0000-0000"></label>
+      <label class="p-f"><span>부서 · 직책</span><input id="ivDept" maxlength="40"></label>
+      <label class="p-f"><span>소속 회사 · 조직 ${isAdmin() ? '' : '*'}</span><select id="ivOrg"><option value="">${isAdmin() ? '(정하지 않음)' : '고르세요'}</option>${orgSel}</select></label>
+      <label class="p-f"><span>계정 사용기간 (일 · 0 = 무기한)</span><input id="ivDays" type="number" min="0" max="3650" value="0"></label>
+      ${progs.length && (isAdmin() || mperm('apps')) ? `<div class="p-f" style="grid-column:1/-1"><span>미리 줄 프로그램 권한 (개인 권한이 필요한 프로그램)</span><div class="seg" id="ivApps">${progs.map(p => `<label><input type="checkbox" value="${E(p.code)}"> ${E(p.name)}</label>`).join('')}</div></div>` : ''}
+      <label class="p-f" style="grid-column:1/-1"><span>여러 명 한꺼번에 (한 줄에 한 명: 이름, 이메일, 연락처, 부서 — 소속·기간·권한은 위 값으로)</span><textarea id="ivBulk" rows="3" placeholder="홍길동, hong@example.com, 010-1234-5678, 운영팀&#10;김영희, , 010-2222-3333"></textarea></label>
+    </div>
+    <div class="p-row" style="max-width:420px"><button class="btn" id="ivGo">초대 링크 만들기</button></div>
+    <div id="ivOut"></div>
+    <h3 style="margin:22px 0 8px;font-size:15px">등록한 사람 (${(list || []).length})</h3>
+    <div class="tbl-wrap"><table class="t"><thead><tr><th>이름</th><th>소속</th><th>이메일 · 연락처</th><th>상태</th><th>등록</th><th></th></tr></thead><tbody>
+      ${(list || []).map(x => `<tr><td><b>${E(x.name)}</b>${x.dept ? `<br><small>${E(x.dept)}</small>` : ''}</td><td>${E(x.org_path || '-')}</td><td>${E(x.email || '(받는 사람이 적음)')}<br><small>${E(x.phone || '')}</small></td>
+        <td>${st(x)}</td><td><small>${E(fmtDT(x.created_at))}<br>${E(x.by || '')}</small></td>
+        <td>${!x.used_at && !x.revoked && !x.expired ? `<button class="btn sm sec" data-cp="${E(x.id)}">링크 복사</button> <button class="btn sm sec" data-rv="${E(x.id)}">취소</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="6" style="color:var(--mute)">아직 없습니다</td></tr>'}
+    </tbody></table></div>
+    <div id="trBox"></div>`;
+  body.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { const x = list.find(y => y.id === b.dataset.cp); copyText(inviteText(x)); });
+  body.querySelectorAll('[data-rv]').forEach(b => b.onclick = async () => {
+    if(!confirmBox('이 초대를 취소할까요? 링크로 더는 가입할 수 없습니다.')) return;
+    const {error} = await SB.rpc('invite_revoke', {p_id:b.dataset.rv}); if(error){ admErr(error); return; } toast('초대를 취소했습니다'); admTab('invite'); });
+  $('ivGo').onclick = async () => {
+    const base = {org_id:$('ivOrg').value, days:+$('ivDays').value || 0, apps:[...document.querySelectorAll('#ivApps input:checked')].map(i => i.value)};
+    const rows = [];
+    if($('ivName').value.trim()) rows.push({name:$('ivName').value.trim(), email:$('ivEmail').value.trim(), phone:$('ivPhone').value.trim(), dept:$('ivDept').value.trim()});
+    $('ivBulk').value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).forEach(l => { const c = l.split(/[,\t]/).map(v => v.trim()); if(c[0]) rows.push({name:c[0], email:c[1] || '', phone:c[2] || '', dept:c[3] || ''}); });
+    if(!rows.length){ toast('이름을 적으세요'); return; }
+    if(!isAdmin() && !base.org_id){ toast('소속 조직을 고르세요'); return; }
+    const made = [], bad = [];
+    for(const r of rows){ const {data, error} = await SB.rpc('invite_create', {p:Object.assign({}, base, r)}); if(error) bad.push(`${r.name}: ${error.message}`); else made.push(data); }
+    const all = made.map(inviteText).join('\n\n');
+    $('ivOut').innerHTML = `<div class="inv-out">${made.length ? `<b>✅ ${made.length}명 초대 링크를 만들었습니다.</b> 아래 문구를 카카오톡 · 문자로 보내세요.
+      <textarea readonly id="ivTx">${E(all)}</textarea><div class="p-row" style="max-width:360px"><button class="btn sm" id="ivCp">문구 복사</button></div>` : ''}
+      ${made.length === 1 ? '<div class="qr" id="ivQr"></div>' : ''}${bad.length ? `<div class="note warn">만들지 못함:<br>${bad.map(E).join('<br>')}</div>` : ''}</div>`;
+    if($('ivCp')) $('ivCp').onclick = () => copyText(all);
+    if($('ivQr')){ try{ $('ivQr').appendChild(qrCanvas(inviteUrl(made[0].token), 180)); }catch(e){} }
+    ['ivName','ivEmail','ivPhone','ivDept','ivBulk'].forEach(i => $(i).value = '');
+  };
+  if(isAdmin()) admTrials();
+}
+async function admTrials(){
+  const box = $('trBox'); if(!box) return;
+  const {data:list, error} = await SB.rpc('admin_list_trials'); if(error){ box.innerHTML = ''; return; }
+  const today = todayKST();
+  box.innerHTML = `<h3 style="margin:26px 0 8px;font-size:15px">🎁 가입 없이 체험</h3>
+    <div class="note">로그인 화면의 「가입 없이 체험하기」로 들어온 사람입니다. 체험자는 <b>체험 허용</b> 프로그램(🧩 프로그램 등록에서 체크) 중 <b>1개</b>만 쓰고, 회사 기준정보는 보이지 않습니다.</div>
+    <div class="form-grid">
+      <label class="p-f"><span>체험 받기</span><div class="seg"><label><input type="checkbox" id="trOpen" ${PUB.trial_open !== false ? 'checked' : ''} ${isOwner() ? '' : 'disabled'}> 로그인 화면에 「가입 없이 체험하기」 표시</label></div></label>
+      <label class="p-f"><span>체험 기간 (일)</span><input id="trDays" type="number" min="1" max="90" value="${E(PUB.trial_days || 7)}" ${isOwner() ? '' : 'disabled'}></label>
+      <div class="p-f"><span>체험 허용 프로그램</span><div>${(PUB.trial_apps || []).map(a => E(a.name)).join(' · ') || '<span style="color:#B3261E">없음 — 🧩 프로그램 등록에서 「체험 허용」을 체크하세요</span>'}</div></div>
+      ${isOwner() ? '<div class="p-row" style="grid-column:1/-1;max-width:360px"><button class="btn" id="trSave">체험 설정 저장</button></div>' : ''}
+    </div>
+    <div class="tbl-wrap"><table class="t"><thead><tr><th>시작</th><th>체험 프로그램</th><th>기간</th><th>최근 접속 · 기기</th><th>상태</th><th></th></tr></thead><tbody>
+      ${(list || []).map(x => { const live = x.status === 'active' && x.until && x.until >= today;
+        return `<tr><td><small>${E(fmtDT(x.created_at))}</small></td><td>${E(x.app_name || (x.trial_app ? x.trial_app : '(아직 안 고름)'))}</td><td>~${E(x.until || '')}</td>
+          <td><small>${E(fmtDT(x.last_seen_at))}<br>${E((x.devices || []).join(', '))}</small></td>
+          <td>${x.memo && /가입으로 전환/.test(x.memo) ? `<span class="pill p-ok">📝 ${E(x.memo)}</span>` : live ? '<span class="pill p-ok">체험 중</span>' : '<span class="pill p-mute">끝남</span>'}</td>
+          <td>${/가입으로 전환/.test(x.memo || '') ? '' : `<button class="btn sm sec" data-ex="${E(x.id)}">+7일</button> ${live ? `<button class="btn sm sec" data-en="${E(x.id)}">종료</button>` : ''}`}</td></tr>`; }).join('') || '<tr><td colspan="6" style="color:var(--mute)">아직 없습니다</td></tr>'}
+    </tbody></table></div>`;
+  if($('trSave')) $('trSave').onclick = async () => {
+    const {error} = await SB.rpc('owner_save_trial_settings', {p_open:$('trOpen').checked, p_days:+$('trDays').value || 7}); if(error){ admErr(error); return; }
+    try{ const r = await SB.rpc('public_settings'); if(r.data) PUB = r.data; }catch(e){}
+    toast('체험 설정을 저장했습니다'); admTab('invite'); };
+  box.querySelectorAll('[data-ex]').forEach(b => b.onclick = async () => { const {error} = await SB.rpc('admin_trial_update', {p_id:b.dataset.ex, p_add_days:7, p_end:false}); if(error){ admErr(error); return; } toast('체험을 7일 늘렸습니다'); admTab('invite'); });
+  box.querySelectorAll('[data-en]').forEach(b => b.onclick = async () => { if(!confirmBox('이 체험을 지금 끝낼까요?')) return; const {error} = await SB.rpc('admin_trial_update', {p_id:b.dataset.en, p_add_days:0, p_end:true}); if(error){ admErr(error); return; } toast('체험을 끝냈습니다'); admTab('invite'); });
 }
 
 /* ---------- 다운로드 QR ---------- */
@@ -961,10 +1134,10 @@ async function checkVersion(){
 const ADM = { tab:'users', users:[], access:[], q:'', st:'', logs:[], logUser:'', devUser:'', progs:[] };
 function closeAdmin(){ $('adm').classList.add('hidden'); $('adm').innerHTML = ''; if(PROFILE) document.body.classList.remove('locked'); if(MW.ready && MW.playing){ try{ mwVid().play().catch(() => {}); }catch(e){} } }
 function admErr(e){ toast('처리하지 못했습니다: ' + (e && e.message || e)); }
-const TABS = [['users','👥 사용자'],['access','🔐 프로그램별 권한'],['orgs','🏢 회사·조직'],['devices','📱 기기'],['logs','📜 접속기록'],['alogs','🧾 관리 작업 기록'],['settings','⚙️ 전체 설정'],['master','📂 기준정보'],['programs','🧩 프로그램 등록']];
+const TABS = [['users','👥 사용자'],['invite','👤 사전 등록 · 체험'],['access','🔐 프로그램별 권한'],['orgs','🏢 회사·조직'],['devices','📱 기기'],['logs','📜 접속기록'],['alogs','🧾 관리 작업 기록'],['settings','⚙️ 전체 설정'],['master','📂 기준정보'],['programs','🧩 프로그램 등록']];
 function consoleTabs(){
   if(isAdmin()) return TABS.filter(t => t[0] !== 'orgs' || ORG_SERVER);
-  const ok = {users:true, access:mperm('apps'), orgs:mperm('create_sub') || mperm('create_company') || mperm('import'), devices:mperm('device'), logs:mperm('logs')};
+  const ok = {users:true, invite:mperm('approve'), access:mperm('apps'), orgs:mperm('create_sub') || mperm('create_company') || mperm('import'), devices:mperm('device'), logs:mperm('logs')};
   return TABS.filter(t => ok[t[0]]);
 }
 
@@ -1573,6 +1746,7 @@ async function admTab(t, reload){
     else if(t === 'programs') await admPrograms();
     else if(t === 'master') await admMaster();
     else if(t === 'orgs') await admOrgs();
+    else if(t === 'invite') await admInvite();
   }catch(e){ body.innerHTML = `<div class="note warn">불러오지 못했습니다: ${E(e && e.message || e)}</div>`; }
 }
 async function fetchUsers(){
@@ -1899,7 +2073,7 @@ async function admPrograms(){
     <div class="tbl-wrap"><table class="t"><thead><tr><th>순서</th><th></th><th>이름</th><th>코드</th><th>버전</th><th>권한 방식</th><th>시스템 공개</th><th>세부 기능</th><th>주소</th><th></th></tr></thead><tbody>
     ${ADM.progs.map((p, i) => `<tr><td>${p.sort}</td><td><img src="${E(p.icon || 'icons/icon-192.png')}" alt="" style="width:30px;height:30px;border-radius:7px" onerror="this.style.display='none'"></td>
       <td><b>${E(p.name)}</b><br><small style="color:var(--mute)">${E(p.full_name)}</small></td><td>${E(p.code)}</td><td>${E(p.version || '-')}</td>
-      <td>${p.open_all ? '<b>전체 공개</b>' : p.uses_access ? '프로그램별 권한' : '승인된 계정 모두'}</td>
+      <td>${p.open_all ? '<b>전체 공개</b>' : p.uses_access ? '프로그램별 권한' : '승인된 계정 모두'}${p.trial_ok ? ' · 🎁 체험' : ''}</td>
       <td>${!p.visible ? '<span class="pill p-mute">비공개</span>' : p.beta ? '<span class="pill p-wait">시험 공개</span>' : '<span class="pill p-ok">공개</span>'}</td>
       <td class="wrap"><small>${(p.features || []).map(f => (p.features_on == null || p.features_on.includes(f.key) ? '✔ ' : '✕ ') + E(f.name)).join('<br>') || '-'}</small></td>
       <td class="wrap"><small>${E(p.url)}</small></td><td><button class="mini" data-i="${i}" ${isOwner() ? '' : 'disabled'}>수정</button></td></tr>`).join('')}</tbody></table></div>`;
@@ -1921,7 +2095,7 @@ function editProgram(p){
       <label class="p-f"><span>현재 버전</span><input id="pgV" value="${E(p.version)}" placeholder="예: 1.0.0"></label>
       <label class="p-f"><span>최소 버전</span><input id="pgM" value="${E(p.min_version)}"></label>
     </div>
-    <div class="seg" style="margin-top:8px"><label><input type="checkbox" id="pgP" ${p.open_all ? 'checked' : ''}> 전체 공개 (로그인한 모든 계정 · 관리범위 · 조직 공개 지정 없이)</label><label><input type="checkbox" id="pgB" ${p.beta ? 'checked' : ''}> 시험 공개 (제작자·관리자만)</label><label><input type="checkbox" id="pgS" ${p.visible ? 'checked' : ''}> 메뉴에 표시 (시스템 공개)</label><label><input type="checkbox" id="pgA" ${p.uses_access ? 'checked' : ''}> 프로그램별 권한 사용</label></div>
+    <div class="seg" style="margin-top:8px"><label><input type="checkbox" id="pgT" ${p.trial_ok ? 'checked' : ''}> 🎁 체험 허용 (가입 없이 체험하는 사람이 고를 수 있음)</label><label><input type="checkbox" id="pgP" ${p.open_all ? 'checked' : ''}> 전체 공개 (로그인한 모든 계정 · 관리범위 · 조직 공개 지정 없이)</label><label><input type="checkbox" id="pgB" ${p.beta ? 'checked' : ''}> 시험 공개 (제작자·관리자만)</label><label><input type="checkbox" id="pgS" ${p.visible ? 'checked' : ''}> 메뉴에 표시 (시스템 공개)</label><label><input type="checkbox" id="pgA" ${p.uses_access ? 'checked' : ''}> 프로그램별 권한 사용</label></div>
     <label class="p-f" style="margin-top:8px"><span>세부 기능 — 한 줄에 「코드=이름」 (예: new=신규 견적) · 프로그램이 이 코드를 알아야 동작합니다</span><textarea id="pgFt" rows="3">${E((p.features || []).map(f => f.key + '=' + f.name).join('\n'))}</textarea></label>
     <div class="seg" id="pgFo">${(p.features || []).map(f => `<label><input type="checkbox" value="${E(f.key)}" ${p.features_on == null || p.features_on.includes(f.key) ? 'checked' : ''}> ${E(f.name)} 공개</label>`).join('')}</div>
     <div class="p-row"><button class="btn sec" id="pgX">취소</button>${n ? '' : '<button class="btn rd" id="pgD">삭제</button>'}<button class="btn" id="pgSv">저장</button></div>`);
@@ -1930,7 +2104,7 @@ function editProgram(p){
     const {error} = await SB.rpc('admin_delete_program', {p_code:p.code}); if(error){ admErr(error); return; } closePop(); toast('삭제했습니다'); ADM.progs = []; admTab('programs'); loadPrograms(); };
   $('pgSv').onclick = async () => {
     const v = {code:$('pgC').value.trim().toLowerCase(), name:$('pgN').value.trim(), full_name:$('pgF').value.trim(), url:$('pgU').value.trim(), icon:$('pgI').value.trim(), color:$('pgK').value,
-      sort:+$('pgO').value || 100, visible:$('pgS').checked, beta:$('pgB').checked, uses_access:$('pgP').checked ? false : $('pgA').checked, open_all:$('pgP').checked, version:$('pgV').value.trim(), min_version:$('pgM').value.trim(), note:$('pgT').value.trim()};
+      sort:+$('pgO').value || 100, visible:$('pgS').checked, beta:$('pgB').checked, uses_access:$('pgP').checked ? false : $('pgA').checked, open_all:$('pgP').checked, trial_ok:$('pgT').checked, version:$('pgV').value.trim(), min_version:$('pgM').value.trim(), note:$('pgT').value.trim()};
     v.features = $('pgFt').value.split(/\n/).map(l => l.trim()).filter(Boolean).map(l => { const i = l.indexOf('='); return i > 0 ? {key:l.slice(0, i).trim(), name:l.slice(i + 1).trim()} : {key:l, name:l}; });
     const onBoxes = [...document.querySelectorAll('#pgFo input')], offKeys = onBoxes.filter(c => !c.checked).map(c => c.value);
     v.features_on = offKeys.length ? v.features.map(f => f.key).filter(k => !offKeys.includes(k)) : null;
@@ -2055,6 +2229,10 @@ async function boot(){
   }
   try{ const r = await SB.rpc('public_settings'); if(r.data) PUB = r.data; }catch(e){}
   const {data} = await SB.auth.getSession();
+  const invTok = (location.search.match(/[?&]invite=([A-Za-z0-9]+)/) || [])[1];
+  if(invTok && !DEMO && (!data || !data.session || (data.session.user && data.session.user.is_anonymous))){
+    if(data && data.session){ try{ await SB.auth.signOut({scope:'local'}); }catch(e){} }
+    await viewInvite(invTok); return; }
   if(!data || !data.session){ viewLogin(); return; }
   if(!lsGet(LS.loginAt)) lsSet(LS.loginAt, new Date().toISOString());
   await checkin('boot');

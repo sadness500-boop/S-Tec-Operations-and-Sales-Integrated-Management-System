@@ -1,9 +1,9 @@
 {
-  "version": "1.9.13",
+  "version": "1.10.0",
   "date": "2026-11-23",
-  "note": "PC 프로그램 사용 스위치(제작자만) — 제작자 관리 콘솔 › ⚙️ 전체 설정에서 윈도우 PC 프로그램만 멈추고 다시 열기 (웹 · 안드로이드 앱은 그대로)",
-  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.9.13.html",
-  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.9.13.apk",
+  "note": "사전 등록(초대 링크로 승인 없이 바로 가입) · 가입 없이 체험(기본 7일, 체험 허용 프로그램 중 1개) · 체험자에게 회사 기준정보 숨김 · 체험 → 가입 때 자료 이어 쓰기",
+  "html": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.10.0.html",
+  "apk": "releases/S-Tec-Operations-and-Sales-Integrated-Management-System_v1.10.0.apk",
   "pc": "https://github.com/sadness500-boop/S-Tec-Operations-and-Sales-Integrated-Management-System/releases/download/pc-latest/S-Tec-Operations-PC-Setup.exe",
   "pc_min": "1.9.13"
 }
