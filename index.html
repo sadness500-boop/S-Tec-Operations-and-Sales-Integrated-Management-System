@@ -2000,7 +2000,7 @@ async function admSettings(){
     (async () => {
       const {data:pc, error:pe} = await SB.rpc('pc_status');
       if(pe){ $('pcBox').innerHTML = `<span style="color:var(--mute)">이 스위치를 쓰려면 Supabase에서 <b>server/supabase_pc_switch.sql</b>을 먼저 실행하세요.</span>`; return; }
-      $('pcBox').innerHTML = `<label class="p-f"><span>지금 상태</span><div class="seg"><label><input type="checkbox" id="pcBl" ${pc.blocked ? 'checked' : ''}> PC 프로그램 사용 중지</label></div>
+      $('pcBox').innerHTML = `<label class="p-f"><span>지금 상태</span><div class="seg wl"><label><input type="checkbox" id="pcBl" ${pc.blocked ? 'checked' : ''}> PC 프로그램 사용 중지</label></div>
           <small style="color:${pc.blocked ? '#B3261E' : 'var(--mute)'}">${pc.blocked ? '⛔ 지금 멈춰 있습니다' : '✅ 지금 사용 중'}${pc.updated_at ? ' · 마지막 변경 ' + E(fmtDT(pc.updated_at)) : ''}</small></label>
         <label class="p-f" style="grid-column:1/-1"><span>PC 화면에 보일 안내 문구</span><input id="pcMsg" maxlength="300" value="${E(pc.message || '')}" placeholder="예: PC 프로그램 점검 중입니다. 웹 주소나 휴대폰 앱을 이용해 주세요."></label>
         <div class="p-row" style="grid-column:1/-1;max-width:360px"><button class="btn ${pc.blocked ? '' : 'rd'}" id="pcSave">PC 스위치 저장</button></div>`;
