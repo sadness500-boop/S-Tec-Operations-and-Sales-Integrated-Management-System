@@ -218,6 +218,12 @@ html[data-theme="dark"] .trial-bar{background:#3A3016;border-color:#6B5A23;color
 .btn.gr{background:var(--gr)}.btn.rd{background:#B3261E}
 .btn.sm{flex:none;padding:6px 10px;font-size:12.5px;border-radius:8px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--mute);margin:6px 0 0;line-height:1.5}
+.sc-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}.sc-tools input{flex:1;min-width:160px}.sc-sum{font-size:12px;color:var(--mute)}
+.sc-list{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px}.sc-row:last-child{border-bottom:0}.sc-row.dis{opacity:.45}
+.sc-nm small{margin-left:6px;color:var(--mute);font-size:11px}.sc-nm small.inh{color:#1b7a34}
+.sc-3{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}.sc-3 button{border:0;background:var(--soft);padding:5px 9px;font-size:12px;cursor:pointer;color:inherit}.sc-3 button+button{border-left:1px solid var(--line)}.sc-3 button.on{background:#1b7a34;color:#fff;font-weight:700}.sc-3 button.on[data-v=view]{background:#2563eb}.sc-3 button.on[data-v=""]{background:#888}
 .seg label{border:1px solid var(--line);border-radius:9px;padding:7px 11px;cursor:pointer;font-size:13px;display:inline-flex;gap:6px;align-items:center;background:var(--soft)}
 .qr{display:flex;justify-content:center;margin:8px 0}
 .qr canvas,.qr img{border-radius:10px;background:#fff;padding:10px}
@@ -516,7 +522,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '1.10.1';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -1532,19 +1538,58 @@ async function userOrg(u){
   $('uoX').onclick = closePop;
   $('uoV').onclick = async () => { const v = $('uoS').value; if(!v){ toast('새 소속을 고르세요'); return; } closePop(); await orgUpd(u, 'org', v, '소속을 바꿨습니다'); };
 }
+/* v1.10.1 관리범위 — 조직별로 ✏️수정 / 👁보기 따로 주기 (근태관리 v2.17 「조직별 권한」과 같은 형식: level:'multi', rules[{t:'org',id,perm}], rest) */
 async function userScope(u){
   await ensureOrgs();
-  const lim = isAdmin() ? null : (ORGI.manager.orgs || []), sc = u.scope || {};
-  pop(`<h3>🗺 관리범위</h3><p>${E(u.name || u.email)} · ${E(u.email)}<br>지금: <b>${E(scopeLabel(sc))}</b><br><small>근태관리 · 사업장 지도 등 11개 프로그램이 같은 관리범위를 씁니다.</small></p>
-    <div class="seg">${isOwner() ? `<label><input type="radio" name="scL" value="all" ${sc.level === 'all' ? 'checked' : ''}> 전체</label>` : ''}<label><input type="radio" name="scL" value="org" ${sc.level !== 'all' ? 'checked' : ''}> 회사·조직 하나</label><label><input type="radio" name="scL" value="" > 지정 안 함</label></div>
-    <label class="p-f"><span>회사 · 조직 (그 아래 조직 포함)</span><select id="scO">${orgOptions(sc.org || u.org_id, {disable: o => o.kind === '그룹' || (lim && !orgUnder(o.id, lim))})}</select></label>
-    <div class="seg"><label><input type="radio" name="scP" value="edit" ${sc.perm !== 'view' ? 'checked' : ''}> 수정</label><label><input type="radio" name="scP" value="view" ${sc.perm === 'view' ? 'checked' : ''}> 보기만</label></div>
-    ${isOwner() ? `<label class="seg"><input type="checkbox" id="scLk" ${u.extra && u.extra.scope_lock ? 'checked' : ''}> ⭐ 제작자 지정으로 고정 (조직 관리자가 바꿀 수 없음 — 조직 범위를 넘는 관리범위에 사용)</label>` : ''}
-    <div class="p-row"><button class="btn sec" id="scX">취소</button><button class="btn" id="scV">저장</button></div>`);
+  const lim = isAdmin() ? null : (ORGI.manager.orgs || []), cur = u.scope || {};
+  const R = new Map(), siteRules = []; let rest = 'none';
+  let lv = cur.level === 'all' ? 'all' : cur.level ? 'multi' : '';
+  if(cur.level === 'multi'){ (cur.rules || []).forEach(r => { if(r.t === 'org') R.set(r.id, r.perm === 'view' ? 'view' : 'edit'); else siteRules.push(r); }); rest = cur.rest === 'view' ? 'view' : 'none'; }
+  else if(cur.level === 'org' && cur.org) R.set(cur.org, cur.perm === 'view' ? 'view' : 'edit');
+  else if(cur.level === 'site') (cur.sites || []).forEach(id => siteRules.push({t:'site', id, perm: cur.perm === 'view' ? 'view' : 'edit'}));
+  let allPerm = cur.perm === 'view' ? 'view' : 'edit', q = '';
+  const can = o => o.kind !== '그룹' && (!lim || orgUnder(o.id, lim));
+  const eff = id => { for(const c of orgChain(id)){ if(R.has(c)) return {p: R.get(c), own: c === id}; } return {p: rest, own: false}; };
+  const nm = id => (orgById(id) || {}).name || id;
+  const build = () => {
+    if(lv === 'all') return {level:'all', perm: allPerm};
+    if(lv !== 'multi') return {};
+    const rules = [...[...R].map(([id, perm]) => ({t:'org', id, perm})), ...siteRules];
+    if(rules.length === 1 && rules[0].t === 'org' && rest === 'none') return {level:'org', org: rules[0].id, label: orgPath(rules[0].id), perm: rules[0].perm};
+    const ed = [...R].filter(([, p]) => p === 'edit').map(([id]) => nm(id)), vw = [...R].filter(([, p]) => p === 'view').map(([id]) => nm(id));
+    const cut = a => a.length > 3 ? a.slice(0, 3).join('·') + ` 외 ${a.length - 3}` : a.join('·');
+    const label = [ed.length ? cut(ed) + ' ✏️수정' : '', vw.length ? cut(vw) + ' 👁보기' : '', siteRules.length ? `사업장 ${siteRules.length}곳 따로` : '', rest === 'view' ? '그 외 👁보기' : ''].filter(Boolean).join(' / ') || '조직별 권한';
+    return {level:'multi', rules, rest, label};
+  };
+  const draw = () => {
+    const rows = orgFlat().filter(({o}) => !q || orgPath(o.id, true).toLowerCase().includes(q));
+    $('scBody').innerHTML = lv === 'multi' ? `
+      <div class="sc-tools"><input type="search" id="scQ" placeholder="🔍 조직 검색" value="${E(q)}"><span class="sc-sum">${E(build().label || '')}</span></div>
+      <div class="sc-list">${rows.map(({o, d}) => { const e = eff(o.id), dis = !can(o);
+        return `<div class="sc-row${dis ? ' dis' : ''}" style="padding-left:${8 + d * 16}px"><span class="sc-nm">${E(o.name)}${o.kind ? `<small>${E(o.kind)}</small>` : ''}${!e.own && e.p !== 'none' ? `<small class="inh">${e.p === 'edit' ? '✏️' : '👁'} 위 조직 따름</small>` : ''}</span>
+          ${dis ? '' : `<span class="sc-3">${[['', '—'], ['edit', '✏️ 수정'], ['view', '👁 보기']].map(([v, t]) => `<button type="button" data-o="${E(o.id)}" data-v="${v}" class="${(R.get(o.id) || '') === v ? 'on' : ''}">${t}</button>`).join('')}</span>`}</div>`; }).join('') || '<div class="sc-row">조직이 없습니다</div>'}</div>
+      ${isAdmin() ? `<label class="seg wl" style="margin-top:8px"><span><input type="checkbox" id="scRest" ${rest === 'view' ? 'checked' : ''}> 위에서 정하지 않은 나머지 조직은 👁 보기만</span></label>` : ''}
+      ${siteRules.length ? `<p class="hint">근태관리에서 사업장 단위로 따로 정한 권한 ${siteRules.length}건은 그대로 둡니다 (근태관리 › 관리 범위에서 바꿉니다).</p>` : ''}
+      <p class="hint">아래 조직은 위 조직 권한을 따릅니다. 아래 조직에 따로 정하면 그 조직은 따로 정한 권한이 우선합니다. 예) 서부지사 ✏️수정 · 동부·남부·중부지사 👁보기</p>`
+      : lv === 'all' ? `<div class="seg"><label><input type="radio" name="scP" value="edit" ${allPerm === 'edit' ? 'checked' : ''}> ✏️ 수정</label><label><input type="radio" name="scP" value="view" ${allPerm === 'view' ? 'checked' : ''}> 👁 보기만</label></div>`
+      : '<p class="hint">관리범위가 없으면 자기 기기·계정 자료만 봅니다(공유 안 함).</p>';
+    if($('scQ')) $('scQ').oninput = () => { q = $('scQ').value.trim().toLowerCase(); const pos = $('scQ').selectionStart; draw(); $('scQ').focus(); try{ $('scQ').setSelectionRange(pos, pos); }catch(e){} };
+    $('scBody').querySelectorAll('.sc-3 button').forEach(b => b.onclick = () => { const v = b.dataset.v; if(v) R.set(b.dataset.o, v); else R.delete(b.dataset.o); draw(); });
+    if($('scRest')) $('scRest').onchange = () => { rest = $('scRest').checked ? 'view' : 'none'; draw(); };
+    document.querySelectorAll('input[name=scP]').forEach(r => r.onchange = () => { allPerm = r.value; });
+  };
+  pop(`<h3>🗺 관리범위</h3><p>${E(u.name || u.email)} · ${E(u.email)}<br>지금: <b>${E(scopeLabel(cur))}</b><br><small>근태관리 · 사업장 지도 등 여러 프로그램이 같은 관리범위를 씁니다. 조직마다 ✏️수정 / 👁보기를 따로 줄 수 있습니다.</small></p>
+    <div class="seg" id="scLv">${isOwner() ? `<label><input type="radio" name="scL" value="all" ${lv === 'all' ? 'checked' : ''}> 전체</label>` : ''}<label><input type="radio" name="scL" value="multi" ${lv === 'multi' ? 'checked' : ''}> 조직별로 정하기</label><label><input type="radio" name="scL" value="" ${!lv ? 'checked' : ''}> 지정 안 함</label></div>
+    <div id="scBody"></div>
+    ${isOwner() ? `<label class="seg wl"><span><input type="checkbox" id="scLk" ${u.extra && u.extra.scope_lock ? 'checked' : ''}> ⭐ 제작자 지정으로 고정 (조직 관리자가 바꿀 수 없음)</span></label>` : ''}
+    <p class="err" id="scErr" style="color:#b42318;font-size:13px;margin:6px 0 0"></p>
+    <div class="p-row"><button class="btn sec" id="scX">취소</button><button class="btn" id="scV">저장</button></div>`, true);
+  document.querySelectorAll('input[name=scL]').forEach(r => r.onchange = () => { lv = r.value; draw(); });
+  draw();
   $('scX').onclick = closePop;
   $('scV').onclick = async () => {
-    const lv = document.querySelector('input[name=scL]:checked').value, perm = document.querySelector('input[name=scP]:checked').value;
-    const v = lv === 'all' ? {level:'all', perm} : lv === 'org' ? {level:'org', org:$('scO').value, label:orgPath($('scO').value), perm} : {};
+    const v = build();
+    if(lv === 'multi' && !R.size && !siteRules.length && rest !== 'view'){ $('scErr').textContent = '조직을 하나 이상 「✏️ 수정」 또는 「👁 보기」로 정하세요'; return; }
     if($('scLk')) v.lock = $('scLk').checked;
     closePop(); await orgUpd(u, 'scope', JSON.stringify(v), '관리범위를 저장했습니다');
   };
@@ -1871,7 +1916,9 @@ async function admAccess(reload){
     if(u.extra_apps && u.extra_apps[ap.code]){ const xa = u.extra_apps[ap.code]; return `<span class="cell on" style="background:rgba(232,160,20,.16)" title="제작자가 이 사람에게만 따로 준 권한 — 「👥 사용자 › ⭐ 추가 권한」에서 바꿉니다">⭐ 제작자 추가<small>${xa && xa.expires_at ? '~' + E(xa.expires_at) : '조직 범위 밖 허용'}</small></span>`; }
     if(ap.open_all) return `<span class="cell on" style="background:rgba(27,122,52,.12)" title="로그인한 모든 계정이 씁니다 — 관리범위 · 조직 공개와 상관없음">전체 공개<small>지정 필요 없음</small></span>`;
     if(u.org_apps && !u.org_apps.includes(ap.code)) return `<span class="cell" style="opacity:.5" title="이 사람의 회사·조직에 열리지 않은 프로그램">조직 비공개<small>${E((u.org_path || '').split(' › ').slice(-1)[0] || '')}</small></span>`;
-    if(ap.code === 'ams' || ap.uses_access === false) return `<span class="cell" title="근태관리 프로그램의 「관리 범위」에서 지정">${E(scopeLabel(scopeById[u.id]))}<small>근태관리에서 지정</small></span>`;
+    if(ap.code === 'ams' || ap.uses_access === false){ const pu = ADM.users.find(x => x.id === u.id) || u, ok = ORG_SERVER && mperm('scope') && (isOwner() || !(pu.extra && pu.extra.scope_lock));
+      return ok ? `<button class="cell${scopeById[u.id] && scopeById[u.id].level ? ' on' : ' off'}" data-sc="${u.id}" title="눌러서 조직별 ✏️수정 / 👁보기 관리범위를 정합니다">${E(scopeLabel(scopeById[u.id]))}<small>공통 관리범위 · 눌러서 지정</small></button>`
+        : `<span class="cell" title="공통 관리범위">${E(scopeLabel(scopeById[u.id]))}<small>공통 관리범위</small></span>`; }
     const x = (u.apps || {})[ap.code];
     if(!x || x.perm !== 'use') return `<button class="cell off" data-u="${u.id}" data-a="${ap.code}">사용 안 함<small>눌러서 지정</small></button>`;
     const ex = x.expires_at && x.expires_at < todayKST(); const br = (x.branches && x.branches.length) ? x.branches.join('·') : '전체 지사';
@@ -1882,10 +1929,10 @@ async function admAccess(reload){
     const q = ADM.q.trim().toLowerCase();
     const rows = ADM.access.filter(u => !q || `${u.name} ${u.email} ${u.dept||''}`.toLowerCase().includes(q));
     $('acBody').innerHTML = rows.map(u => `<tr><td class="wrap"><b>${E(u.name || '(이름 없음)')}</b><br><small style="color:var(--mute)">${E(u.email)} · ${E(ROLE_KO[u.role] || '')} · ${E(STATUS_KO[u.status] || '')}${u.org_path ? '<br>' + E(u.org_path) : ''}</small></td>${apps.map(a => `<td class="app${a.code === 'ams' || a.uses_access === false ? ' ams' : ''}">${cell(u, a)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${apps.length+1}">사용자가 없습니다</td></tr>`;
-    $('acBody').querySelectorAll('button.cell').forEach(b => b.onclick = () => editAccess(b.dataset.u, b.dataset.a));
+    $('acBody').querySelectorAll('button.cell').forEach(b => b.onclick = () => b.dataset.sc ? scopeFromAccess(b.dataset.sc) : editAccess(b.dataset.u, b.dataset.a));
   };
   body.innerHTML = `<div class="note">하나의 아이디로 쓰는 <b>${apps.length}개 프로그램</b>의 사용 권한을 사람마다 따로 줍니다. 칸을 누르면 <b>사용 / 사용 안 함 · 이 프로그램 사용기한 · 관리 범위(담당 지사)</b>를 정합니다.<br>
-    제작자·관리자는 모든 프로그램을 씁니다. 근태관리는 그 프로그램의 「관리 범위」(회사›조직›사업장)를 그대로 씁니다.${ORG_SERVER ? '<br><b>조직 비공개</b> = 그 사람 회사·조직에 열리지 않은 프로그램(제작자가 「🏢 회사·조직」에서 엶) · <b>⭐ 제작자 추가</b> = 제작자가 이 사람에게만 따로 준 권한' : ''}</div>
+    제작자·관리자는 모든 프로그램을 씁니다. 근태관리 칸을 누르면 <b>공통 관리범위</b>(조직마다 ✏️수정 / 👁보기)를 정합니다 — 제작자와 「관리범위 지정」 권한이 있는 조직 관리자가 바꿀 수 있습니다.${ORG_SERVER ? '<br><b>조직 비공개</b> = 그 사람 회사·조직에 열리지 않은 프로그램(제작자가 「🏢 회사·조직」에서 엶) · <b>⭐ 제작자 추가</b> = 제작자가 이 사람에게만 따로 준 권한' : ''}</div>
     <div class="tools"><input type="search" id="acQ" placeholder="🔍 이름·이메일·부서 검색" value="${E(ADM.q)}"><button class="btn sm sec" id="acCsv">⬇️ 엑셀(CSV)</button></div>
     <div class="tbl-wrap"><table class="t acc" style="--n:${apps.length}"><thead><tr><th>사용자</th>${apps.map(a => `<th class="app"><img src="${E(a.icon || 'icons/icon-192.png')}" alt="" onerror="this.style.display='none'">${E(a.name)}</th>`).join('')}</tr></thead><tbody id="acBody"></tbody></table></div>`;
   draw();
@@ -1893,6 +1940,7 @@ async function admAccess(reload){
   $('acCsv').onclick = () => csv('프로그램별권한', ['이름','이메일','역할', ...apps.map(a => a.name)], ADM.access.map(u => [u.name, u.email, ROLE_KO[u.role],
     ...apps.map(a => (u.role !== 'user') ? '전체' : a.open_all ? '전체 공개' : (a.code === 'ams' || a.uses_access === false) ? scopeLabel(scopeById[u.id]) : ((u.apps||{})[a.code] && u.apps[a.code].perm === 'use' ? '사용' + (u.apps[a.code].expires_at ? ' ~' + u.apps[a.code].expires_at : '') : '사용 안 함'))]));
 }
+async function scopeFromAccess(uid){ const u = ADM.users.find(x => x.id === uid) || ADM.access.find(x => x.id === uid); if(!u) return; await userScope(u); }
 function editAccess(uid, code){
   const u = ADM.access.find(x => x.id === uid), ap = regList().find(a => a.code === code); if(!u || !ap) return;
   const x = (u.apps || {})[code] || {perm:'none', expires_at:null, branches:[]};
@@ -1900,9 +1948,11 @@ function editAccess(uid, code){
     <label class="p-f"><span>사용 권한</span><div class="seg"><label><input type="radio" name="apP" value="use" ${x.perm === 'use' ? 'checked' : ''}> 사용</label><label><input type="radio" name="apP" value="none" ${x.perm !== 'use' ? 'checked' : ''}> 사용 안 함</label></div></label>
     ${(ap.features || []).length ? `<label class="p-f"><span>세부 기능 (모두 켜면 이 사람 조직에 열린 기능 모두)</span><div class="seg" id="apF">${ap.features.map(f => `<label><input type="checkbox" value="${E(f.key)}" ${!x.features || x.features.includes(f.key) ? 'checked' : ''}> ${E(f.name)}</label>`).join('')}</div></label>` : ''}
     <label class="p-f"><span>이 프로그램 사용기한 (비우면 계정 기한만 적용)</span><input type="date" id="apE" value="${E(x.expires_at || '')}"></label>
-    <label class="p-f"><span>관리 범위 — 담당 지사 (모두 비우면 전체 지사)</span><div class="seg">${BRANCHES.map(b => `<label><input type="checkbox" value="${b}" ${(x.branches||[]).includes(b) ? 'checked' : ''}> ${b}지사</label>`).join('')}</div></label>
+    ${ORG_SERVER && mperm('scope') ? `<div class="p-f"><span>관리 범위 — 조직별 수정 / 보기 (모든 프로그램 공통)</span><button type="button" class="btn sm sec" id="apSc">🗺 ${E(scopeLabel((ADM.users.find(z => z.id === uid) || {}).scope))} — 바꾸기</button></div>` : ''}
+    <label class="p-f"><span>이 프로그램만 담당 지사 더 좁히기 (모두 비우면 위 관리범위 그대로)</span><div class="seg">${BRANCHES.map(b => `<label><input type="checkbox" value="${b}" ${(x.branches||[]).includes(b) ? 'checked' : ''}> ${b}지사</label>`).join('')}</div></label>
     <div class="p-row"><button class="btn sec" id="apX">취소</button><button class="btn" id="apS">저장</button></div>`);
   $('apX').onclick = closePop;
+  if($('apSc')) $('apSc').onclick = () => { closePop(); scopeFromAccess(uid); };
   $('apS').onclick = async () => {
     const perm = document.querySelector('input[name=apP]:checked').value, ex = $('apE').value || null;
     const brs = [...document.querySelectorAll('#popBox .seg:not(#apF) input[type=checkbox]:checked')].map(i => i.value);
