@@ -25,7 +25,7 @@
     { name: '오늘의 뽑기판', sub: '모임용 뽑기·사다리·미니게임', url: 'https://sadness500-boop.github.io/ppopgi/', c: '#e0452b', ch: '오' },
     { name: '팔도 제철맛길', sub: '달마다 제철 음식과 지역 맛집 지도', url: 'https://sadness500-boop.github.io/jecheolmatgil/', c: '#17552f', ch: '팔' },
     { name: '팔도 축제길', sub: '전국 지역·계절·월별 축제 지도', url: 'https://sadness500-boop.github.io/Festival/', c: '#1f4e79', ch: '팔' }];
-  const APP_NAMES = { stim: '통합관리 시스템(메인)', stso: '사업장 현황 지도', ams: '근태관리', stcr: '고객 불만처리', stlr: '법률 대응 시스템', stqs: '용역인력 견적', wbe: '업무량 기반 산정', stse: '단기인력 견적', stpp: '제안서 제작시스템', stos: '업무표준화 · 매뉴얼', stpm: '성과 관리 시스템', stac: '통합 출입관리 시스템' };
+  const APP_NAMES = { stim: '통합관리 시스템(메인)', stso: '사업장 현황 지도', ams: '근태관리', stcr: '고객 불만처리', stlr: '법률 대응 시스템', stqs: '용역인력 견적', wbe: '업무량 기반 산정', stse: '단기인력 견적', stpp: '제안서 제작시스템', stos: '업무표준화 · 매뉴얼', stpm: '성과 관리 시스템', stac: '통합 출입관리 시스템', stsh: '안전보건 관리 시스템' };
   const H = CFG.hooks || {};
   const $ = s => { try { return s ? document.querySelector(s) : null; } catch (e) { return null; } };
   const E = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -377,7 +377,7 @@ ${hide ? hide + '{display:none!important}' : ''}
   }
   /* 파일 이름으로 프로그램 알아내기 (영문 이름 · 한글 이름) */
   const APP_EN = { stim: 'S-Tec-Operations-and-Sales', stso: 'Business-Site-Overview', ams: 'Attendance-Management', stcr: 'Complaint-Response', stlr: 'Legal-Response', stqs: 'Quotation-System',
-    wbe: 'Workload-Based', stse: 'short-estimate', stpp: 'Proposal-Production', stos: 'Process-Standardization', stpm: 'Performance-Management', stac: 'Access-Control' };
+    wbe: 'Workload-Based', stse: 'short-estimate', stpp: 'Proposal-Production', stos: 'Process-Standardization', stpm: 'Performance-Management', stac: 'Access-Control', stsh: 'Safety-and-Health' };
   const guessApp = n => { const x = String(n).replace(/[\s_]+/g, '-').toLowerCase(); for (const [a, k] of Object.entries(APP_EN)) if (x.includes(k.toLowerCase())) return a; return ''; };
   async function ownerPut(app, file) {
     const c = cli(); if (!c || !c.storage) throw new Error('로그인이 필요합니다');

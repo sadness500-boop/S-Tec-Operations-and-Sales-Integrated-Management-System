@@ -85,6 +85,11 @@ Designed & Developed by Rat Rae Choi
 - 관리 콘솔 「🏢 기준정보」 탭, 각 프로그램 왼쪽 아래 「📂 자료」 버튼
 - `forms/` — 프로그램별 자료 입력 양식(엑셀)과 작성 안내서(PDF)
 
+#### v1.10.3 (안전보건 관리 시스템 등록 · 프로그램 13개)
+- 근태관리 다음 카드로 「S-Tec Safety & Health Management System(안전보건 관리 시스템 · 중대재해처벌법 대응)」 추가 — `stsh`, https://sadness500-boop.github.io/S-Tec-Safety-and-Health-Management-System/ (sort 25)
+- 서버 등록부: `server/supabase_integrated.sql` 또는 안전보건 저장소의 `server/supabase_stsh.sql`(공유 기록 `sh_records` · 월간 안전 지표 `sh_kpi` · 연계함 `sh_links` 포함)
+- 공통 상단 버튼(stec-bar) 프로그램 이름 · 📂 자료(stec-master) 양식에 `stsh` 추가
+
 #### v1.10.2 (접고 펴는 조직 트리 · 사업장 관리범위)
 - 회사·조직표와 관리범위 창을 눌러서 펴고 접는 트리로 변경(▶ 누르면 바로 아래 단계, 다시 누르면 접힘) · 관리범위에 근태관리 사업장까지 보이고 사업장마다 ✏️수정/👁보기 지정
 - 서버: `server/supabase_scope_sites.sql` (사업장 이름·소속만 돌려주는 `scope_site_list`)

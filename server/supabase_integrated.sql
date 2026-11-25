@@ -65,7 +65,9 @@ insert into public.program_registry (code, name, full_name, url, icon, color, so
  ('stpm', '성과 관리 시스템', 'S-Tec Performance Management System',
           'https://sadness500-boop.github.io/S-Tec-Performance-Management-System/', 'assets/apps/stpm.png', '#17552F', 100, true, '업종·산업별 일일·주간·월간·연간 성과 계수화 · 운영실태·품질점검'),
  ('stac', '통합 출입관리 시스템', 'S-Tec Integrated Access Control System',
-          'https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/', 'assets/apps/stac.png', '#0C2350', 110, true, '방문자 · 방문차량 출입 등록 · 초성 · 번호판 · 업체 통합 검색 · 누적 DATA')
+          'https://sadness500-boop.github.io/S-Tec-Integrated-Access-Control-System/', 'assets/apps/stac.png', '#0C2350', 110, true, '방문자 · 방문차량 출입 등록 · 초성 · 번호판 · 업체 통합 검색 · 누적 DATA'),
+ ('stsh', '안전보건 관리 시스템', 'S-Tec Safety & Health Management System',
+          'https://sadness500-boop.github.io/S-Tec-Safety-and-Health-Management-System/', 'assets/apps/stsh.png', '#C2410C', 25, true, '중대재해처벌법 대응 · 위험성평가 · TBM · 안전점검 · 아차사고 · 교육·보호구 · 도급인 협의')
 on conflict (code) do nothing;
 
 -- 2) 프로그램별 권한: 등록부에 있는 프로그램이면 모두 허용 ---------------------------------

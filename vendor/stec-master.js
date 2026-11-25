@@ -116,7 +116,9 @@
     stpp: { en: 'S-Tec Proposal Production System', ko: '제안서 제작시스템', uses: { companies: CO_DOC, orgs: ['name', 'type', 'company'], sites: SITE_BASIC },
       what: '제안서 「회사 소개」의 회사 정보와 제안 대상 고객사(사업장) · 담당 조직을 고를 수 있게 넣습니다.' },
     stac: { en: 'S-Tec Integrated Access Control System', ko: '통합 출입관리 시스템', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
-      what: '출입관리를 운영할 사업장(고객사)과 담당 조직(지사)을 고를 수 있게 넣습니다.' }
+      what: '출입관리를 운영할 사업장(고객사)과 담당 조직(지사)을 고를 수 있게 넣습니다.' },
+    stsh: { en: 'S-Tec Safety & Health Management System', ko: '안전보건 관리 시스템', uses: { companies: CO_BASIC, orgs: ORG_BASIC, sites: SITE_BASIC },
+      what: '위험성평가 · TBM · 안전점검 · 아차사고를 기록할 사업장(고객사)과 담당 조직(지사 · 안전 담당)을 고를 수 있게 넣습니다.' }
   };
   function programSpec(code) {
     var p = PROGRAMS[code] || PROGRAMS.stim, sheets = [];

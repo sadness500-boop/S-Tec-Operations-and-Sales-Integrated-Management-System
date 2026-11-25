@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>S-Tec Operations and Sales Integrated Management System</title>
-<meta name="description" content="에스텍 운영 및 영업 통합관리 시스템 — 하나의 아이디로 11개 프로그램을 사용합니다. Designed & Developed by Rat Rae Choi">
+<meta name="description" content="에스텍 운영 및 영업 통합관리 시스템 — 하나의 아이디로 12개 프로그램을 사용합니다. Designed & Developed by Rat Rae Choi">
 <meta name="author" content="Rat Rae Choi">
 <meta name="theme-color" content="#0B1F8A">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -460,7 +460,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
       <span class="eyebrow"><i></i>Operations &amp; Sales</span>
       <div class="hi" id="heroHi">안녕하세요</div>
       <h1>오늘도 <em>안전한 현장</em>,<br>하나로 연결된 에스텍</h1>
-      <div class="meta" id="heroMeta">하나의 아이디로 에스텍 11개 프로그램을 사용합니다</div>
+      <div class="meta" id="heroMeta">하나의 아이디로 에스텍 12개 프로그램을 사용합니다</div>
       <div class="stats">
         <div class="stat"><div class="ic">🏢</div><div><small>관리범위</small><b id="stScope">-</b></div></div>
         <div class="stat"><div class="ic">📅</div><div><small>사용기한</small><b id="stExp">-</b></div></div>
@@ -519,12 +519,12 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
 /* =====================================================================
    S-Tec Operations and Sales Integrated Management System
    에스텍 운영 및 영업 통합관리 시스템 — 메인 프로그램
-   · 통합 로그인(11개 프로그램 공용 Supabase 서버) · 프로그램 메뉴(런처) · 제작자 관리 콘솔
+   · 통합 로그인(12개 프로그램 공용 Supabase 서버) · 프로그램 메뉴(런처) · 제작자 관리 콘솔
    Designed & Developed by Rat Rae Choi
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.10.2';
+const APP_VERSION = '1.10.3';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -533,10 +533,10 @@ const INSTALL_URL = WEB_URL + 'install.html';
 const APK_URL = `https://github.com/${REPO}/releases/download/app-latest/stim-latest.apk`;
 const PC_URL = `https://github.com/${REPO}/releases/download/pc-latest/S-Tec-Operations-PC-Setup.exe`;
 const PC_ZIP = `https://github.com/${REPO}/releases/download/pc-latest/S-Tec-Operations-PC-Setup.zip`;
-/* 11개 프로그램이 함께 쓰는 서버 — auth-config.json 을 먼저 읽고, 없으면 아래 값을 씁니다.
+/* 12개 프로그램이 함께 쓰는 서버 — auth-config.json 을 먼저 읽고, 없으면 아래 값을 씁니다.
    (publishable 키는 공개해도 되는 키입니다. secret/service_role 키는 절대 넣지 않습니다.) */
 const AUTH_EMBED = { enabled:true, supabaseUrl:'https://mnsuebexlzhvomxhrear.supabase.co', supabaseAnonKey:'sb_publishable_QAD9rHyR_zI8Oyl30VuXqw_tDof_Ctx' };
-/* 통합 로그인 저장 키 — 4단계에서 11개 프로그램도 이 키를 쓰도록 바꾸면 한 번 로그인으로 모두 열립니다 */
+/* 통합 로그인 저장 키 — 4단계에서 12개 프로그램도 이 키를 쓰도록 바꾸면 한 번 로그인으로 모두 열립니다 */
 const SESSION_KEY = 'stec_auth_session';
 const LS = { dev:'stec_device_id', devName:'stec_device_name', loginAt:'stec_login_at', last:'stec_last_email',
              prof:'stim_profile', okAt:'stim_ok_at', theme:'stim_theme', mgr:'stim_manager', progs:'stim_programs' };
@@ -545,6 +545,7 @@ const LS = { dev:'stec_device_id', devName:'stec_device_name', loginAt:'stec_log
 const BUILTIN = [
   {code:'stso', name:'사업장 현황 지도',   full_name:'S-Tec-Business-Site-Overview', url:'https://sadness500-boop.github.io/S-Tec-Business-Site-Overview/', icon:'assets/apps/stso.png', color:'#0E7C86', sort:10, uses_access:true, note:'사업장 위치·현황 지도'},
   {code:'ams',  name:'근태관리',          full_name:'Attendance Management Software', url:'https://sadness500-boop.github.io/Attendance-Management-Software/', icon:'assets/apps/ams.png', color:'#1B7A34', sort:20, uses_access:false, note:'근무조 코드 기반 월 근태 자동 생성'},
+  {code:'stsh', name:'안전보건 관리 시스템', full_name:'S-Tec Safety & Health Management System', url:'https://sadness500-boop.github.io/S-Tec-Safety-and-Health-Management-System/', icon:'assets/apps/stsh.png', color:'#C2410C', sort:25, uses_access:true, note:'중대재해처벌법 대응 · 위험성평가 · TBM · 안전점검 · 아차사고 · 교육·보호구 · 도급인 협의'},
   {code:'stcr', name:'고객 불만처리',      full_name:'S-Tec-Complaint-Response-System', url:'https://sadness500-boop.github.io/S-Tec-Complaint-Response-System/', icon:'assets/apps/stcr.png', color:'#C0392B', sort:30, uses_access:true, note:'Complaint 대응방안 Word·PPT·PDF'},
   {code:'stlr', name:'법률 대응 시스템',   full_name:'Legal Response System', url:'https://sadness500-boop.github.io/S-Tec-Legal-Response-System/', icon:'assets/apps/stlr.png', color:'#1F3A73', sort:40, uses_access:true, note:'부당 클레임·근무자 사안 법률 검토 Word·PPT·PDF'},
   {code:'stqs', name:'용역인력 견적',      full_name:'S-Tec-Quotation-System', url:'https://sadness500-boop.github.io/S-Tec-Quotation-System/', icon:'assets/apps/stqs.png', color:'#0B1F8A', sort:50, uses_access:true, note:'업종별 용역인력·부대비용 견적'},
@@ -659,7 +660,7 @@ function viewLoading(t){ lock(); $('gBox').innerHTML = BRAND + `<div class="g-sp
 function viewLogin(note){
   lock();
   $('gBox').innerHTML = BRAND + FIGS + `
-    <h2>로그인</h2><p class="g-sub">하나의 아이디로 에스텍 11개 프로그램을 모두 사용합니다. (근태관리 등 기존 프로그램 아이디 그대로)</p>
+    <h2>로그인</h2><p class="g-sub">하나의 아이디로 에스텍 12개 프로그램을 모두 사용합니다. (근태관리 등 기존 프로그램 아이디 그대로)</p>
     <div id="gMsg" class="g-msg"></div>
     <form id="fLogin" autocomplete="on">
       <label class="g-f"><span>아이디 (이메일)</span><input id="lEmail" type="email" inputmode="email" autocomplete="username" required placeholder="name@example.com"></label>
@@ -905,7 +906,7 @@ function roBanner(on){
   let b = $('roBan');
   if(!on){ if(b) b.remove(); return; }
   if(!b){ b = document.createElement('div'); b.id = 'roBan'; document.body.appendChild(b); }
-  b.innerHTML = '🔒 이 기기는 <b>조회 전용</b>입니다 — 11개 프로그램 모두 보기만 되고 저장은 되지 않습니다. (변경: 제작자·관리자 → 관리 콘솔 「기기」)';
+  b.innerHTML = '🔒 이 기기는 <b>조회 전용</b>입니다 — 12개 프로그램 모두 보기만 되고 저장은 되지 않습니다. (변경: 제작자·관리자 → 관리 콘솔 「기기」)';
 }
 async function openProgram(code){
   const pg = PROGRAMS.find(x => x.code === code); if(!pg) return;
@@ -1090,7 +1091,7 @@ async function copyText(t){ try{ await navigator.clipboard.writeText(t); toast('
 
 /* ---------- 친구추천 ---------- */
 $('btnShare').onclick = async () => {
-  const text = `S-Tec Operations and Sales Integrated Management System (에스텍 운영 및 영업 통합관리 시스템) — 하나의 아이디로 근태관리·견적·사업장 지도 등 11개 프로그램을 씁니다.\n${WEB_URL}`;
+  const text = `S-Tec Operations and Sales Integrated Management System (에스텍 운영 및 영업 통합관리 시스템) — 하나의 아이디로 근태관리·견적·사업장 지도 등 12개 프로그램을 씁니다.\n${WEB_URL}`;
   if(navigator.share){ try{ await navigator.share({title:'S-Tec Operations and Sales Integrated Management System', text, url:WEB_URL}); return; }catch(e){ if(e && e.name === 'AbortError') return; } }
   pop(`<h3>🤝 친구추천</h3><p>아래 문구를 복사해 카카오톡·문자로 보내세요. 받은 사람은 <b>가입 신청</b> 후 제작자 승인을 받으면 사용할 수 있습니다.</p>
     <label class="p-f"><textarea id="shT" rows="4">${E(text)}</textarea></label><div class="p-row"><button class="btn sec" id="shX">닫기</button><button class="btn" id="shC">복사</button></div>`);
@@ -1348,7 +1349,7 @@ async function admOrgs(){
   const progTx = o => o.programs == null ? '<small style="color:var(--mute)">물려받음</small>' : `<b>${o.programs.length}</b>개`;
   const canNewCo = isAdmin() || mperm('create_company'), canSub = isAdmin() || mperm('create_sub'), canImp = isAdmin() || mperm('import');
   ADM.orgOpen = ADM.orgOpen || new Set();
-  body.innerHTML = `<div class="note">회사·조직표는 <b>11개 프로그램이 함께</b> 씁니다(가입 화면 · 관리범위 · 근태관리 조직표 · 📂 자료). 처음 목록은 <b>251128 전사 조직도(변경 후)</b>로 만들었고, 개인 이름은 넣지 않았습니다.<br>
+  body.innerHTML = `<div class="note">회사·조직표는 <b>12개 프로그램이 함께</b> 씁니다(가입 화면 · 관리범위 · 근태관리 조직표 · 📂 자료). 처음 목록은 <b>251128 전사 조직도(변경 후)</b>로 만들었고, 개인 이름은 넣지 않았습니다.<br>
       ${own ? '<b>열어 줄 프로그램 · 세부 기능</b>은 제작자만 정합니다. 비워 두면 위 조직 설정을 물려받습니다.' : isAdmin() ? '열어 줄 프로그램 · 세부 기능은 제작자만 정합니다.' : '맡은 조직과 그 아래 조직만 고칠 수 있습니다.'}</div>
     <div class="tools"><input type="search" id="ogQ" placeholder="🔍 조직 이름 찾기" value="${E(ADM.orgQ || '')}">
       ${canNewCo ? '<button class="btn sm gr" id="ogNewCo">＋ 회사</button>' : ''}${canImp ? '<button class="btn sm" id="ogImp">📥 파일로 등록 (엑셀·CSV·PDF)</button><button class="btn sm sec" id="ogTpl">⬇️ 등록 양식</button>' : ''}
@@ -1709,7 +1710,7 @@ async function openGuide(doc){
   const g = $('guide'); g.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
   g.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>📘 사용 안내<small>에스텍 운영 및 영업 통합관리 시스템 v${E(APP_VERSION)}</small></h2>
     <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input class="gd-search" id="gdQ" type="search" placeholder="🔎 찾을 말 (예: 비밀번호)"><button class="chip" id="gdPr" title="지금 매뉴얼을 인쇄하거나 PDF로 저장">🖨️ 인쇄</button><a class="chip" id="gdDW" target="_blank" rel="noopener" title="지금 매뉴얼을 Word 파일로 내려받기">⬇️ Word</a><a class="chip" id="gdDP" target="_blank" rel="noopener" title="지금 매뉴얼을 PPT 파일로 내려받기">⬇️ PPT</a><a class="chip" id="gdDF" target="_blank" rel="noopener" title="지금 매뉴얼을 PDF 파일로 내려받기">⬇️ PDF</a><button class="chip gr" id="gdX">✕ 닫기</button></div></div></div>
-    <div class="adm-tabs" id="gdTabs" style="max-width:1180px"><button data-d="user">👤 사용자 매뉴얼</button>${adm ? '<button data-d="admin">🛡️ 제작자 관리매뉴얼</button><button id="gdOd" title="메인 · 11개 프로그램의 제작자 관리매뉴얼 파일 (제작자만)">📂 프로그램별 제작자 관리매뉴얼</button>' : ''}</div>
+    <div class="adm-tabs" id="gdTabs" style="max-width:1180px"><button data-d="user">👤 사용자 매뉴얼</button>${adm ? '<button data-d="admin">🛡️ 제작자 관리매뉴얼</button><button id="gdOd" title="메인 · 12개 프로그램의 제작자 관리매뉴얼 파일 (제작자만)">📂 프로그램별 제작자 관리매뉴얼</button>' : ''}</div>
     <div id="gdBody"></div>
     <div class="adm-body" style="max-width:1180px"><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${E(APP_VERSION)}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
   $('gdX').onclick = closeGuide; $('gdPr').onclick = () => window.print();
@@ -1784,7 +1785,7 @@ function admZoomInit(){
 function loadScript(src){ return new Promise((res, rej) => { if(document.querySelector(`script[data-src="${src}"]`)) return res(); const s = document.createElement('script'); s.src = src; s.dataset.src = src; s.onload = res; s.onerror = () => rej(new Error(src + ' 를 불러오지 못했습니다')); document.head.appendChild(s); }); }
 async function backupAll(){
   if(!isOwner()){ toast('전체 백업은 제작자만 할 수 있습니다'); return; }
-  pop(`<h3>💾 전체 백업</h3><p>11개 프로그램의 <b>서버 자료 전체</b>(사용자 · 권한 · 기기 · 근태 사업장/직원 · 저장 자료 · 기록 · 설정)를 엑셀 한 파일로 내려받습니다.</p>
+  pop(`<h3>💾 전체 백업</h3><p>12개 프로그램의 <b>서버 자료 전체</b>(사용자 · 권한 · 기기 · 근태 사업장/직원 · 저장 자료 · 기록 · 설정)를 엑셀 한 파일로 내려받습니다.</p>
     <label class="seg" style="display:block;margin:8px 0"><input type="checkbox" id="bkLoc" checked> <b>이 기기 자료</b>도 함께 넣기 <small style="color:var(--mute)">(이 브라우저에만 저장된 견적 · 불만처리 등의 자료, 로그인 정보는 제외)</small></label>
     <p style="color:#B3261E;font-size:13px">개인정보가 들어 있으니 회사 보안 폴더에 보관하세요.</p>
     <div class="p-row"><button class="btn" id="bkGo">엑셀 만들기</button><button class="btn sec" id="bkX">닫기</button></div><p id="bkMsg" style="color:var(--mute);font-size:13px"></p>`);
@@ -1811,7 +1812,7 @@ async function backupAll(){
 async function openAdmin(tab){
   if(!canConsole()){ toast('관리자만 열 수 있습니다'); return; }
   const a = $('adm'), tabs = consoleTabs(); if(!tabs.some(t => t[0] === tab)) tab = 'users'; a.classList.remove('hidden'); document.body.classList.add('locked'); try{ mwVid().pause(); }catch(e){}
-  a.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>${isOwner() ? '🛡️ ' : isAdmin() ? '🛡️ ' : '🧑‍💼 '}${conTitle()}<small>${E(PROFILE.name || PROFILE.email)} · ${isAdmin() ? E(ROLE_KO[PROFILE.role]) + ' — 11개 프로그램 통합 관리' : '조직 관리자 — ' + E((ORGI.manager.labels || []).join(', '))}</small></h2>
+  a.innerHTML = `<div class="adm-top"><div class="adm-top-in"><img class="lg" src="icons/icon-192.png" alt=""><h2>${isOwner() ? '🛡️ ' : isAdmin() ? '🛡️ ' : '🧑‍💼 '}${conTitle()}<small>${E(PROFILE.name || PROFILE.email)} · ${isAdmin() ? E(ROLE_KO[PROFILE.role]) + ' — 12개 프로그램 통합 관리' : '조직 관리자 — ' + E((ORGI.manager.labels || []).join(', '))}</small></h2>
     <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="zoomer" title="관리 화면 크기 (Ctrl + 마우스 휠과 같음)"><button id="azOut" title="줄이기">－</button><button class="zv" id="azV" title="100%로">100%</button><button id="azIn" title="키우기">＋</button><button id="azFit" title="표 전체가 한 화면에 보이도록">↔ 맞춤</button><button id="azWide" title="화면 너비 끝까지 넓게">⇔ 넓게</button></span>${isOwner() ? '<button class="chip" id="admBk" title="모든 프로그램 자료를 엑셀로 내려받습니다">💾 전체 백업</button>' : ''}${isOwner() ? '<button class="chip" id="admGd" title="제작자 관리매뉴얼">📘 매뉴얼</button>' : ''}<button class="chip" id="admRe">🔄 새로고침</button><button class="chip gr" id="admX">✕ 닫기</button></div></div></div>
     <div class="adm-tabs" id="admTabs">${tabs.map(t => `<button data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
     <div class="adm-body"><div class="adm-card" id="admBody"></div><div class="foot-sign"><span>S-Tec Operations and Sales Integrated Management System v${APP_VERSION}</span><span class="sig">Designed &amp; Developed by ${CREATOR}</span></div></div>`;
@@ -1857,7 +1858,7 @@ async function admUsers(reload){
   const body = $('admBody');
   body.innerHTML = `<div class="kpis"><div class="kpi"><b>${k.all}</b><small>전체 계정</small></div><div class="kpi"><b>${k.pend}</b><small>승인 대기</small></div>
       <div class="kpi"><b>${k.act}</b><small>사용 중</small></div><div class="kpi"><b>${k.sus}</b><small>차단</small></div><div class="kpi"><b>${k.today}</b><small>오늘 접속</small></div></div>
-    <div class="note">${isAdmin() ? '가입 승인 · 차단 · 계정 사용기한 · 임시 비밀번호 · 강제 로그아웃은 <b>11개 프로그램 모두에 함께</b> 적용됩니다. 프로그램마다 따로 주는 권한은 「🔐 프로그램별 권한」 탭에서 정합니다.' + (isOwner() && ORG_SERVER ? '<br>🧑‍💼 <b>조직 관리자</b> 지정 · ⭐ <b>추가 권한</b>(조직 범위를 넘는 권한)은 제작자만 정합니다.' : '') : '맡은 조직 <b>' + E((ORGI.manager.labels || []).join(', ')) + '</b>의 사용자만 보입니다. 할 수 있는 일은 제작자가 정해 준 범위입니다.'}</div>
+    <div class="note">${isAdmin() ? '가입 승인 · 차단 · 계정 사용기한 · 임시 비밀번호 · 강제 로그아웃은 <b>12개 프로그램 모두에 함께</b> 적용됩니다. 프로그램마다 따로 주는 권한은 「🔐 프로그램별 권한」 탭에서 정합니다.' + (isOwner() && ORG_SERVER ? '<br>🧑‍💼 <b>조직 관리자</b> 지정 · ⭐ <b>추가 권한</b>(조직 범위를 넘는 권한)은 제작자만 정합니다.' : '') : '맡은 조직 <b>' + E((ORGI.manager.labels || []).join(', ')) + '</b>의 사용자만 보입니다. 할 수 있는 일은 제작자가 정해 준 범위입니다.'}</div>
     <div class="tools"><input type="search" id="uQ" placeholder="🔍 이름·이메일·부서 검색" value="${E(ADM.q)}">
       <select id="uSt"><option value="">전체 상태</option><option value="pending">승인 대기</option><option value="active">사용 중</option><option value="suspended">차단</option></select>
       ${ORGS.length ? `<select id="uOrg"><option value="">전체 회사·조직</option>${orgOptions(ADM.uOrg, {filter: o => isAdmin() || o.mine})}<option value="__none" ${ADM.uOrg === '__none' ? 'selected' : ''}>소속 없음</option></select>` : ''}
@@ -1902,7 +1903,7 @@ async function userAction(u, a){
   if(!u) return; const who = `${u.name || u.email} (${u.email})`;
   if(a === 'approve') return upd(u, 'approve', null, '가입을 승인했습니다');
   if(a === 'activate') return upd(u, 'activate', null, '차단을 풀었습니다');
-  if(a === 'suspend'){ if(confirmBox(`${who} 계정을 차단할까요?\n11개 프로그램 모두에서 즉시 로그아웃됩니다.`)) return upd(u, 'suspend', null, '차단했습니다'); return; }
+  if(a === 'suspend'){ if(confirmBox(`${who} 계정을 차단할까요?\n12개 프로그램 모두에서 즉시 로그아웃됩니다.`)) return upd(u, 'suspend', null, '차단했습니다'); return; }
   if(a === 'force_logout'){ if(confirmBox(`${who} 님을 모든 기기에서 강제 로그아웃할까요?`)) return upd(u, 'force_logout', null, '강제 로그아웃했습니다'); return; }
   if(a === 'org') return userOrg(u);
   if(a === 'scope') return userScope(u);
@@ -1910,7 +1911,7 @@ async function userAction(u, a){
   if(a === 'extra') return userExtra(u);
   if(a === 'delete'){ if(confirmBox(`${who} 계정을 완전히 삭제할까요?\n되돌릴 수 없습니다.`)) return upd(u, 'delete', null, '계정을 삭제했습니다'); return; }
   if(a === 'expires'){
-    pop(`<h3>📅 계정 사용기한</h3><p>${E(who)}<br>이 날짜까지 11개 프로그램을 사용할 수 있습니다. 비우면 무기한입니다.</p>
+    pop(`<h3>📅 계정 사용기한</h3><p>${E(who)}<br>이 날짜까지 12개 프로그램을 사용할 수 있습니다. 비우면 무기한입니다.</p>
       <label class="p-f"><span>사용기한</span><input type="date" id="exD" value="${E(u.expires_at || '')}"></label>
       <div class="seg">${[['+30일',30],['+90일',90],['+1년',365],['무기한',0]].map(([l,d]) => `<label data-d="${d}">${l}</label>`).join('')}</div>
       <div class="p-row"><button class="btn sec" id="exX">취소</button><button class="btn" id="exS">저장</button></div>`);
@@ -1924,7 +1925,7 @@ async function userAction(u, a){
     $('mmX').onclick = closePop; $('mmS').onclick = async () => { const v = $('mmT').value; closePop(); await upd(u, 'memo', v, '메모를 저장했습니다'); }; return;
   }
   if(a === 'role'){
-    pop(`<h3>역할 변경</h3><p>${E(who)}<br>관리자는 이 관리 콘솔을 쓸 수 있고 11개 프로그램을 모두 사용합니다.</p>
+    pop(`<h3>역할 변경</h3><p>${E(who)}<br>관리자는 이 관리 콘솔을 쓸 수 있고 12개 프로그램을 모두 사용합니다.</p>
       <div class="seg"><label><input type="radio" name="rl" value="user" ${u.role === 'user' ? 'checked' : ''}> 사용자</label><label><input type="radio" name="rl" value="admin" ${u.role === 'admin' ? 'checked' : ''}> 관리자</label></div>
       <div class="p-row"><button class="btn sec" id="rlX">취소</button><button class="btn" id="rlS">저장</button></div>`);
     $('rlX').onclick = closePop; $('rlS').onclick = async () => { const v = document.querySelector('input[name=rl]:checked').value; closePop(); await upd(u, 'role', v, '역할을 바꿨습니다'); }; return;
@@ -2015,7 +2016,7 @@ async function admDevices(){
   const D = (data || []).filter(d => isAdmin() || !ADM.devUser || d.user_id === ADM.devUser), np = D.filter(d => d.approved === false).length;
   const st = d => d.blocked ? '<span class="pill p-no">차단</span>' : d.approved === false ? '<span class="pill p-wait">승인 대기</span>' : '<span class="pill p-ok">허용</span>';
   const md = d => d.readonly ? '<span class="pill p-mute">조회 전용</span>' : '<span class="pill p-ok">수정 가능</span>';
-  $('admBody').innerHTML = `<div class="note">사용자가 로그인한 기기 목록입니다. <b>차단</b>하면 그 기기에서는 11개 프로그램 모두 사용할 수 없습니다(그 사람의 다른 기기는 그대로). 휴대폰 분실 시 바로 차단하세요.<br>
+  $('admBody').innerHTML = `<div class="note">사용자가 로그인한 기기 목록입니다. <b>차단</b>하면 그 기기에서는 12개 프로그램 모두 사용할 수 없습니다(그 사람의 다른 기기는 그대로). 휴대폰 분실 시 바로 차단하세요.<br>
       <b>승인</b> — 「설정」에서 새 기기 승인을 켜면 두 번째 기기부터 여기서 승인해야 씁니다. · <b>조회 전용</b> — 그 기기에서는 보기만 되고 저장이 서버에서 거부됩니다.</div>
     <div class="tools"><select id="dvU"><option value="">전체 사용자</option>${ADM.users.map(u => `<option value="${u.id}" ${ADM.devUser === u.id ? 'selected' : ''}>${E(u.name || u.email)}</option>`).join('')}</select><span style="color:var(--mute);font-size:12.5px">${D.length}대${np ? ` · <b style="color:#B45309">승인 대기 ${np}대</b>` : ''}</span></div>
     <div class="tbl-wrap"><table class="t"><thead><tr><th>사용자</th><th>기기 이름</th><th>종류(브라우저)</th><th>처음 접속</th><th>최근 접속</th><th>IP</th><th>상태</th><th>권한</th><th></th></tr></thead><tbody>
@@ -2031,7 +2032,7 @@ async function admDevices(){
       const {error} = isAdmin() ? await SB.rpc('admin_set_device_block', {p_user:d.user_id, p_device:d.id, p_blocked:!d.blocked}) : await SB.rpc('org_set_device', {p_user:d.user_id, p_device:d.id, p_action:d.blocked ? 'unblock' : 'block'}); if(error){ admErr(error); return; }
       toast(d.blocked ? '차단을 풀었습니다' : '기기를 차단했습니다'); admTab('devices'); return;
     }
-    if(a === 'readonly' && !confirmBox(`${who}를 조회 전용으로 바꿀까요?\n그 기기에서는 11개 프로그램 모두 저장이 되지 않습니다.`)) return;
+    if(a === 'readonly' && !confirmBox(`${who}를 조회 전용으로 바꿀까요?\n그 기기에서는 12개 프로그램 모두 저장이 되지 않습니다.`)) return;
     const {error} = await SB.rpc(isAdmin() ? 'admin_set_device' : 'org_set_device', {p_user:d.user_id, p_device:d.id, p_action:a}); if(error){ admErr(error); return; }
     toast({approve:'기기를 승인했습니다', readonly:'조회 전용으로 바꿨습니다', edit:'수정할 수 있게 바꿨습니다'}[a]); admTab('devices'); });
 }
@@ -2042,7 +2043,7 @@ async function admLogs(){
   const {data, error} = isAdmin() ? await SB.rpc('admin_list_logs', {p_user: ADM.logUser || null, p_limit:1000}) : await SB.rpc('org_list_logs'); if(error) throw error;
   const L = (data || []).filter(l => isAdmin() || !ADM.logUser || l.user_id === ADM.logUser);
   const evPill = ev => `<span class="pill ${ev === 'login' ? 'p-ok' : ev === 'logout' ? 'p-mute' : 'p-no'}">${E(EV_KO[ev] || ev)}</span>`;
-  $('admBody').innerHTML = `<div class="note">11개 프로그램의 로그인·로그아웃·실패·접속 거부·강제 로그아웃 기록입니다(최근 1,000건). 개인정보이므로 사내 기준에 맞춰 보관하세요.</div>
+  $('admBody').innerHTML = `<div class="note">12개 프로그램의 로그인·로그아웃·실패·접속 거부·강제 로그아웃 기록입니다(최근 1,000건). 개인정보이므로 사내 기준에 맞춰 보관하세요.</div>
     <div class="tools"><select id="lgU"><option value="">전체 사용자</option>${ADM.users.map(u => `<option value="${u.id}" ${ADM.logUser === u.id ? 'selected' : ''}>${E(u.name || u.email)}</option>`).join('')}</select>
       <select id="lgE"><option value="">전체 동작</option>${Object.keys(EV_KO).map(k => `<option value="${k}">${EV_KO[k]}</option>`).join('')}</select>
       <input type="search" id="lgQ" placeholder="🔍 이메일·기기·IP 검색"><button class="btn sm sec" id="lgCsv">⬇️ 엑셀(CSV) 내려받기</button></div>
@@ -2072,7 +2073,7 @@ async function admAlogs(){
 async function admSettings(){
   const {data, error} = await SB.rpc('admin_get_settings'); if(error) throw error;
   const s = data || {};
-  $('admBody').innerHTML = `<div class="note">이 설정은 <b>11개 프로그램 모두에 함께</b> 적용됩니다. 저장은 제작자만 할 수 있습니다.</div>
+  $('admBody').innerHTML = `<div class="note">이 설정은 <b>12개 프로그램 모두에 함께</b> 적용됩니다. 저장은 제작자만 할 수 있습니다.</div>
     <div class="form-grid">
       <label class="p-f"><span>가입 신청 받기</span><div class="seg"><label><input type="checkbox" id="stSign" ${s.signup_open ? 'checked' : ''}> 로그인 화면에 「가입 신청」 표시</label></div></label>
       <label class="p-f"><span>가입 승인</span><div class="seg"><label><input type="checkbox" id="stAppr" ${s.require_approval ? 'checked' : ''}> 가입 후 제작자 승인이 있어야 사용</label></div></label>
@@ -2115,14 +2116,14 @@ async function admSettings(){
       if(error){ admErr(error); return; } toast('기기 정책을 저장했습니다'); admTab('settings'); };
   })();
   $('stSave').onclick = async () => {
-    if($('stLock').checked && !s.global_lock && !confirmBox('앱 전체를 잠글까요?\n제작자·관리자를 뺀 모든 사용자가 11개 프로그램을 쓸 수 없게 됩니다.')) return;
+    if($('stLock').checked && !s.global_lock && !confirmBox('앱 전체를 잠글까요?\n제작자·관리자를 뺀 모든 사용자가 12개 프로그램을 쓸 수 없게 됩니다.')) return;
     const {error} = await SB.rpc('admin_save_settings', {p_signup_open:$('stSign').checked, p_require_approval:$('stAppr').checked, p_global_lock:$('stLock').checked, p_lock_message:$('stMsg').value, p_default_days:+$('stDays').value || 0});
     if(error){ admErr(error); return; } toast('전체 설정을 저장했습니다'); admTab('settings');
   };
 }
 
 /* 🧩 프로그램 등록 */
-/* 🏢 기준정보 — 11개 프로그램 공통 회사 · 조직 · 사업장 */
+/* 🏢 기준정보 — 12개 프로그램 공통 회사 · 조직 · 사업장 */
 async function admMaster(){
   const M = window.StecMaster;
   if(!M){ $('admBody').innerHTML = '<div class="note warn">기준정보 도구(vendor/stec-master.js)를 불러오지 못했습니다.</div>'; return; }
@@ -2131,7 +2132,7 @@ async function admMaster(){
   const co = M.companies(), og = M.orgs(), st = M.sites(), c = M.cache();
   const del = (kind, i) => `<button class="mini rd" data-del="${kind}" data-i="${i}">삭제</button>`;
   const tbl = (head, rows) => `<div class="tbl-wrap"><table class="t"><thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('') || `<tr><td colspan="${head.length}" style="color:var(--mute)">아직 없습니다 — 기존 에스텍베스트 자료로 동작 중</td></tr>`}</tbody></table></div>`;
-  $('admBody').innerHTML = `<div class="note">여기에 넣은 <b>회사 · 조직(본부·지사·지점·기타) · 사업장</b>은 11개 프로그램이 함께 씁니다. 프로그램마다 따로 만들 필요가 없습니다.<br>
+  $('admBody').innerHTML = `<div class="note">여기에 넣은 <b>회사 · 조직(본부·지사·지점·기타) · 사업장</b>은 12개 프로그램이 함께 씁니다. 프로그램마다 따로 만들 필요가 없습니다.<br>
       「📂 자료 입력 · 불러오기」 → 엑셀 양식에 적어 불러오면 한 번에 들어갑니다. 같은 이름이 있으면 적은 칸만 바뀌고, 없으면 새로 추가됩니다. 각 프로그램 왼쪽 아래 「📂 자료」에서도 그 프로그램용 양식으로 넣을 수 있습니다.</div>
     ${srvErr ? `<div class="note warn">서버 기준정보를 읽지 못했습니다: ${E(srvErr)}${/master_get|function/.test(srvErr) ? ' — Supabase에서 server/supabase_master.sql 을 실행하세요.' : ''}</div>` : ''}
     <div class="tools"><button class="btn" id="msOpen" style="width:auto">📂 자료 입력 · 불러오기 (엑셀)</button><a class="btn sec" style="width:auto;text-decoration:none;text-align:center" href="${E(M.pdfUrl('stim'))}" target="_blank" rel="noopener">📄 작성 안내서(PDF)</a>
@@ -2145,7 +2146,7 @@ async function admMaster(){
   $('msOpen').onclick = () => { M.register({code:'stim', button:false, apply:() => { setTimeout(() => admTab('master'), 300); return ''; }}); M.open(); };
   $('admBody').querySelectorAll('button[data-del]').forEach(b => b.onclick = async () => {
     const kind = b.dataset.del, list = (kind === 'companies' ? M.companies() : kind === 'orgs' ? M.orgs() : M.sites()).slice(), x = list[+b.dataset.i];
-    if(!confirmBox(`「${x.name}」을(를) 기준정보에서 지울까요?\n11개 프로그램 목록에서 빠집니다(기존 에스텍베스트 기본 자료는 그대로).`)) return;
+    if(!confirmBox(`「${x.name}」을(를) 기준정보에서 지울까요?\n12개 프로그램 목록에서 빠집니다(기존 에스텍베스트 기본 자료는 그대로).`)) return;
     list.splice(+b.dataset.i, 1);
     try{ await M.save(kind, list, '삭제: ' + x.name); toast('지웠습니다'); admTab('master'); }catch(e){ admErr(e); }
   });
@@ -2154,7 +2155,7 @@ async function admPrograms(){
   const body = $('admBody');
   const {data, error} = await SB.rpc('admin_list_programs');
   if(error){
-    body.innerHTML = `<div class="note warn"><b>프로그램 등록부 서버 설정이 아직 없습니다.</b> 지금은 메인 화면이 기본 11개 프로그램을 보여 줍니다.<br>
+    body.innerHTML = `<div class="note warn"><b>프로그램 등록부 서버 설정이 아직 없습니다.</b> 지금은 메인 화면이 기본 12개 프로그램을 보여 줍니다.<br>
       새 프로그램을 메뉴에 추가하려면 Supabase → SQL Editor에서 이 저장소의 <b>server/supabase_integrated.sql</b>을 한 번 실행하세요.<br><small>${E(error.message || '')}</small></div>
       <div class="tbl-wrap"><table class="t"><thead><tr><th>순서</th><th>코드</th><th>이름</th><th>주소</th></tr></thead><tbody>${BUILTIN.map(p => `<tr><td>${p.sort}</td><td>${p.code}</td><td>${E(p.name)}</td><td class="wrap"><small>${E(p.url)}</small></td></tr>`).join('')}</tbody></table></div>`;
     return;
@@ -2343,7 +2344,7 @@ const startUp = () => {
   try{ pageZoomInit(); }catch(e){} boot(); checkVersion(); mediaInit(); };
 if(DEMO && !window.STIM_DEMO){ const s = document.createElement('script'); s.src = 'demo.js'; s.onload = startUp; s.onerror = () => viewBlocked('server', {detail:'demo.js 를 불러오지 못했습니다'}); document.head.appendChild(s); }
 else startUp();
-/* ---------- 공통 상단 버튼 (stec-bar) — 메인 · 11개 프로그램 같은 모양 ---------- */
+/* ---------- 공통 상단 버튼 (stec-bar) — 메인 · 12개 프로그램 같은 모양 ---------- */
 window.STEC_BAR_CFG = { app: 'stim', into: '.band .acts', zoomKey: PZ_KEY, noZoomInit: true,
   hide: ['#btnQr', '#btnShare', '#zoomSeg', '#themeSeg', '#btnAdm', '#btnAcct'],
   qr: '#btnQr', share: '#btnShare', acct: '#btnAcct', theme: { attr: 'data-t', scope: '#themeSeg' },
