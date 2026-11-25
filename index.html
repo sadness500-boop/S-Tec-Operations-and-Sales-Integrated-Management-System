@@ -222,6 +222,8 @@ html[data-theme="dark"] .trial-bar{background:#3A3016;border-color:#6B5A23;color
 .sc-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}.sc-tools input{flex:1;min-width:160px}.sc-sum{font-size:12px;color:var(--mute)}
 .sc-list{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px}.sc-row:last-child{border-bottom:0}.sc-row.dis{opacity:.45}
+.tg{cursor:pointer;user-select:none}.tw{display:inline-block;width:18px;font-size:10px;color:var(--mute);text-align:center}.tw.nk{opacity:.6}.kc{margin-left:6px;font-size:11px;color:var(--mute);font-weight:400}
+.sc-row.site{background:rgba(127,127,127,.04)}.sc-nm small.sc-n{color:#2563eb}
 .sc-nm small{margin-left:6px;color:var(--mute);font-size:11px}.sc-nm small.inh{color:#1b7a34}
 .sc-3{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}.sc-3 button{border:0;background:var(--soft);padding:5px 9px;font-size:12px;cursor:pointer;color:inherit}.sc-3 button+button{border-left:1px solid var(--line)}.sc-3 button.on{background:#1b7a34;color:#fff;font-weight:700}.sc-3 button.on[data-v=view]{background:#2563eb}.sc-3 button.on[data-v=""]{background:#888}
 .seg label{border:1px solid var(--line);border-radius:9px;padding:7px 11px;cursor:pointer;font-size:13px;display:inline-flex;gap:6px;align-items:center;background:var(--soft)}
@@ -522,7 +524,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.10.1';
+const APP_VERSION = '1.10.2';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -1212,6 +1214,14 @@ function orgFlat(filter){
   orgRoots().sort((a, b) => (a.sort || 0) - (b.sort || 0)).forEach(r => walk(r, 0));
   return out;
 }
+/* v1.10.2 접고 펴는 트리: 펼친(open) 조직의 바로 아래 단계만 보임. extra[조직id] = 그 조직 아래에 붙일 잎(사업장) */
+function orgTreeRows(open, extra){
+  const out = [], walk = (o, d) => { out.push({o, d}); if(!open.has(o.id)) return; orgKids(o.id).forEach(k => walk(k, d + 1)); ((extra && extra[o.id]) || []).forEach(s => out.push({s, d: d + 1})); };
+  orgRoots().sort((a, b) => (a.sort || 0) - (b.sort || 0)).forEach(r => walk(r, 0));
+  return out;
+}
+function orgHasKids(id, extra){ return orgKids(id).length > 0 || ((extra && extra[id]) || []).length > 0; }
+function orgCaret(id, open, extra){ return orgHasKids(id, extra) ? `<span class="tw">${open.has(id) ? '▼' : '▶'}</span>` : '<span class="tw nk">·</span>'; }
 function orgOptions(sel, opt){
   opt = opt || {};
   return orgFlat(opt.filter).map(({o, d}) => `<option value="${E(o.id)}" ${o.id === sel ? 'selected' : ''} ${opt.disable && opt.disable(o) ? 'disabled' : ''}>${'　'.repeat(Math.max(0, d - (opt.skipGroup ? 1 : 0)))}${E(o.name)}${o.active === false ? ' (닫힘)' : ''}</option>`).join('');
@@ -1337,33 +1347,31 @@ async function admOrgs(){
   const progs = regList();
   const progTx = o => o.programs == null ? '<small style="color:var(--mute)">물려받음</small>' : `<b>${o.programs.length}</b>개`;
   const canNewCo = isAdmin() || mperm('create_company'), canSub = isAdmin() || mperm('create_sub'), canImp = isAdmin() || mperm('import');
-  ADM.orgDepth = ADM.orgDepth == null ? 2 : ADM.orgDepth;
+  ADM.orgOpen = ADM.orgOpen || new Set();
   body.innerHTML = `<div class="note">회사·조직표는 <b>11개 프로그램이 함께</b> 씁니다(가입 화면 · 관리범위 · 근태관리 조직표 · 📂 자료). 처음 목록은 <b>251128 전사 조직도(변경 후)</b>로 만들었고, 개인 이름은 넣지 않았습니다.<br>
       ${own ? '<b>열어 줄 프로그램 · 세부 기능</b>은 제작자만 정합니다. 비워 두면 위 조직 설정을 물려받습니다.' : isAdmin() ? '열어 줄 프로그램 · 세부 기능은 제작자만 정합니다.' : '맡은 조직과 그 아래 조직만 고칠 수 있습니다.'}</div>
     <div class="tools"><input type="search" id="ogQ" placeholder="🔍 조직 이름 찾기" value="${E(ADM.orgQ || '')}">
-      <select id="ogD"><option value="1">회사까지</option><option value="2">회사 아래 1단계</option><option value="3">2단계</option><option value="9">전체 펼치기</option></select>
       ${canNewCo ? '<button class="btn sm gr" id="ogNewCo">＋ 회사</button>' : ''}${canImp ? '<button class="btn sm" id="ogImp">📥 파일로 등록 (엑셀·CSV·PDF)</button><button class="btn sm sec" id="ogTpl">⬇️ 등록 양식</button>' : ''}
       <span style="color:var(--mute);font-size:12.5px">회사 ${ORGS.filter(o => o.kind === '회사').length}개 · 조직 ${ORGS.length}개</span></div>
     <div class="tbl-wrap"><table class="t"><thead><tr><th>회사 · 조직</th><th>종류</th><th>인원</th><th>가입 목록</th><th>가입 코드</th>${own || isAdmin() ? '<th>열린 프로그램</th>' : ''}<th>조직 관리자</th><th></th></tr></thead><tbody id="ogB"></tbody></table></div>`;
-  $('ogD').value = String(ADM.orgDepth);
   const draw = () => {
     const q = (ADM.orgQ || '').trim();
-    const rows = q ? orgFlat(o => o.name.includes(q) || orgPath(o.id).includes(q)) : orgFlat(o => orgDepth(o.id) <= ADM.orgDepth);
+    const rows = q ? orgFlat(o => o.name.includes(q) || orgPath(o.id).includes(q)) : orgTreeRows(ADM.orgOpen);
     $('ogB').innerHTML = rows.map(({o, d}) => {
       const mine = isAdmin() || o.mine;
-      return `<tr class="${o.active === false ? 'closed' : ''}"><td class="wrap"><span style="padding-left:${d * 16}px">${d ? '└ ' : ''}<b>${E(o.name)}</b></span>${q ? `<br><small style="color:var(--mute);padding-left:${d * 16}px">${E(orgPath(o.parent))}</small>` : ''}</td>
+      return `<tr class="${o.active === false ? 'closed' : ''}"><td class="wrap">${q ? `<span style="padding-left:${d * 16}px">${d ? '└ ' : ''}<b>${E(o.name)}</b></span>` : `<span class="tg" data-t="${E(o.id)}" style="padding-left:${d * 18}px" title="${orgHasKids(o.id) ? '눌러서 아래 단계 보기 / 숨기기' : ''}">${orgCaret(o.id, ADM.orgOpen)}<b>${E(o.name)}</b>${orgKids(o.id).length ? `<small class="kc">${orgKids(o.id).length}</small>` : ''}</span>`}${q ? `<br><small style="color:var(--mute);padding-left:${d * 16}px">${E(orgPath(o.parent))}</small>` : ''}</td>
         <td>${E(o.kind)}</td><td>${o.members || 0}</td><td>${o.kind === '그룹' ? '-' : o.join_open ? '보임' : '<span class="pill p-mute">숨김</span>'}${o.active === false ? ' <span class="pill p-no">닫힘</span>' : ''}</td>
         <td>${o.join_code ? '🔒 ' + E(o.join_code) : '-'}</td>${own || isAdmin() ? `<td>${progTx(o)}${o.features ? ' <small>· 기능 제한</small>' : ''}</td>` : ''}
         <td class="wrap"><small>${E((mg[o.id] || []).join(', '))}</small></td>
         <td style="white-space:nowrap">${mine && o.kind !== '그룹' && (isAdmin() || !(ORGI.manager.orgs || []).includes(o.id)) ? `<button class="mini" data-e="${E(o.id)}">수정</button>` : ''}
           ${(isAdmin() || (o.mine && canSub)) ? `<button class="mini gr" data-n="${E(o.id)}">＋ 하위</button>` : ''}</td></tr>`;
     }).join('') || '<tr><td colspan="8">해당하는 조직이 없습니다</td></tr>';
+    $('ogB').querySelectorAll('.tg[data-t]').forEach(t => t.onclick = () => { const id = t.dataset.t; if(!orgHasKids(id)) return; ADM.orgOpen.has(id) ? ADM.orgOpen.delete(id) : ADM.orgOpen.add(id); draw(); });
     $('ogB').querySelectorAll('button[data-e]').forEach(b => b.onclick = () => editOrg(orgById(b.dataset.e)));
-    $('ogB').querySelectorAll('button[data-n]').forEach(b => b.onclick = () => editOrg(null, b.dataset.n));
+    $('ogB').querySelectorAll('button[data-n]').forEach(b => b.onclick = () => { ADM.orgOpen.add(b.dataset.n); editOrg(null, b.dataset.n); });
   };
   draw();
   $('ogQ').oninput = () => { ADM.orgQ = $('ogQ').value; draw(); };
-  $('ogD').onchange = () => { ADM.orgDepth = +$('ogD').value; draw(); };
   if($('ogNewCo')) $('ogNewCo').onclick = () => editOrg(null, (ORGS.find(o => o.kind === '그룹') || {}).id || '');
   if($('ogImp')) $('ogImp').onclick = importOrgs;
   if($('ogTpl')) $('ogTpl').onclick = orgTemplate;
@@ -1539,46 +1547,81 @@ async function userOrg(u){
   $('uoV').onclick = async () => { const v = $('uoS').value; if(!v){ toast('새 소속을 고르세요'); return; } closePop(); await orgUpd(u, 'org', v, '소속을 바꿨습니다'); };
 }
 /* v1.10.1 관리범위 — 조직별로 ✏️수정 / 👁보기 따로 주기 (근태관리 v2.17 「조직별 권한」과 같은 형식: level:'multi', rules[{t:'org',id,perm}], rest) */
+let SCOPE_SITES = null;   // v1.10.2 근태관리 사업장 목록(이름·소속 조직) — 관리범위 창에서 사업장까지 보이기
+async function loadScopeSites(){
+  if(SCOPE_SITES) return SCOPE_SITES;
+  try{ const r = await SB.rpc('scope_site_list'); if(r.error) throw r.error; SCOPE_SITES = r.data || []; }
+  catch(e){ SCOPE_SITES = []; SCOPE_SITES.err = fnMissing(e) ? 'sql' : (e.message || String(e)); }
+  return SCOPE_SITES;
+}
+/* v1.10.1~ 관리범위 — 조직·사업장마다 ✏️수정 / 👁보기 (근태관리 「조직별 권한」과 같은 형식: level:'multi', rules[{t:'org'|'site',id,perm}], rest) */
 async function userScope(u){
   await ensureOrgs();
+  const sites = await loadScopeSites();
   const lim = isAdmin() ? null : (ORGI.manager.orgs || []), cur = u.scope || {};
-  const R = new Map(), siteRules = []; let rest = 'none';
+  const R = new Map(), SR = new Map(); let rest = 'none';
   let lv = cur.level === 'all' ? 'all' : cur.level ? 'multi' : '';
-  if(cur.level === 'multi'){ (cur.rules || []).forEach(r => { if(r.t === 'org') R.set(r.id, r.perm === 'view' ? 'view' : 'edit'); else siteRules.push(r); }); rest = cur.rest === 'view' ? 'view' : 'none'; }
-  else if(cur.level === 'org' && cur.org) R.set(cur.org, cur.perm === 'view' ? 'view' : 'edit');
-  else if(cur.level === 'site') (cur.sites || []).forEach(id => siteRules.push({t:'site', id, perm: cur.perm === 'view' ? 'view' : 'edit'}));
-  let allPerm = cur.perm === 'view' ? 'view' : 'edit', q = '';
+  const pv = p => p === 'view' ? 'view' : 'edit';
+  if(cur.level === 'multi'){ (cur.rules || []).forEach(r => (r.t === 'site' ? SR : R).set(r.id, pv(r.perm))); rest = cur.rest === 'view' ? 'view' : 'none'; }
+  else if(cur.level === 'org' && cur.org) R.set(cur.org, pv(cur.perm));
+  else if(cur.level === 'site') (cur.sites || []).forEach(id => SR.set(id, pv(cur.perm)));
+  let allPerm = pv(cur.perm), q = '';
+  const siteById = {}, extra = {}, NOORG = '__noorg';
+  sites.forEach(x => { siteById[x.id] = x; const k = x.org && orgById(x.org) ? x.org : NOORG; (extra[k] = extra[k] || []).push(x); });
   const can = o => o.kind !== '그룹' && (!lim || orgUnder(o.id, lim));
-  const eff = id => { for(const c of orgChain(id)){ if(R.has(c)) return {p: R.get(c), own: c === id}; } return {p: rest, own: false}; };
-  const nm = id => (orgById(id) || {}).name || id;
+  const canSite = x => !lim || orgUnder(x.org, lim);
+  const effOrg = id => { for(const c of orgChain(id)){ if(R.has(c)) return {p: R.get(c), own: c === id}; } return {p: rest, own: false}; };
+  const effSite = x => SR.has(x.id) ? {p: SR.get(x.id), own: true} : (() => { const e = x.org ? effOrg(x.org) : {p: rest}; return {p: e.p, own: false}; })();
+  const nm = id => (orgById(id) || {}).name || id, snm = id => (siteById[id] || {}).name || id;
+  /* 처음 펼침: 맨 위 + 권한을 준 조직·사업장이 보이도록 그 위 조직들 */
+  const open = new Set(orgRoots().map(o => o.id));
+  [...R.keys()].forEach(id => orgChain(id).slice(1).forEach(c => open.add(c)));
+  [...SR.keys()].forEach(id => { const x = siteById[id]; if(x && x.org) orgChain(x.org).forEach(c => open.add(c)); });
   const build = () => {
     if(lv === 'all') return {level:'all', perm: allPerm};
     if(lv !== 'multi') return {};
-    const rules = [...[...R].map(([id, perm]) => ({t:'org', id, perm})), ...siteRules];
+    const rules = [...[...R].map(([id, perm]) => ({t:'org', id, perm})), ...[...SR].map(([id, perm]) => ({t:'site', id, perm}))];
     if(rules.length === 1 && rules[0].t === 'org' && rest === 'none') return {level:'org', org: rules[0].id, label: orgPath(rules[0].id), perm: rules[0].perm};
-    const ed = [...R].filter(([, p]) => p === 'edit').map(([id]) => nm(id)), vw = [...R].filter(([, p]) => p === 'view').map(([id]) => nm(id));
+    const pick = (M, p, f) => [...M].filter(([, v]) => v === p).map(([id]) => f(id));
+    const ed = [...pick(R, 'edit', nm), ...pick(SR, 'edit', snm)], vw = [...pick(R, 'view', nm), ...pick(SR, 'view', snm)];
     const cut = a => a.length > 3 ? a.slice(0, 3).join('·') + ` 외 ${a.length - 3}` : a.join('·');
-    const label = [ed.length ? cut(ed) + ' ✏️수정' : '', vw.length ? cut(vw) + ' 👁보기' : '', siteRules.length ? `사업장 ${siteRules.length}곳 따로` : '', rest === 'view' ? '그 외 👁보기' : ''].filter(Boolean).join(' / ') || '조직별 권한';
+    const label = [ed.length ? cut(ed) + ' ✏️수정' : '', vw.length ? cut(vw) + ' 👁보기' : '', rest === 'view' ? '그 외 👁보기' : ''].filter(Boolean).join(' / ') || '조직별 권한';
     return {level:'multi', rules, rest, label};
   };
+  const seg = (kind, id, curV) => `<span class="sc-3">${[['', '—'], ['edit', '✏️ 수정'], ['view', '👁 보기']].map(([v, t]) => `<button type="button" data-k="${kind}" data-o="${E(id)}" data-v="${v}" class="${(curV || '') === v ? 'on' : ''}">${t}</button>`).join('')}</span>`;
+  const inh = e => !e.own && e.p !== 'none' ? `<small class="inh">${e.p === 'edit' ? '✏️' : '👁'} 위 조직 따름</small>` : '';
+  const orgRow = (o, d) => { const dis = !can(o), e = effOrg(o.id), n = (extra[o.id] || []).length;
+    return `<div class="sc-row${dis ? ' dis' : ''}" style="padding-left:${8 + d * 18}px"><span class="sc-nm tg" data-t="${E(o.id)}">${orgCaret(o.id, open, extra)}${E(o.name)}${o.kind ? `<small>${E(o.kind)}</small>` : ''}${n ? `<small class="sc-n">사업장 ${n}</small>` : ''}${inh(e)}</span>${dis ? '' : seg('o', o.id, R.get(o.id))}</div>`; };
+  const siteRow = (x, d) => { const dis = !canSite(x), e = effSite(x);
+    return `<div class="sc-row site${dis ? ' dis' : ''}" style="padding-left:${8 + d * 18}px"><span class="sc-nm"><span class="tw nk">🏢</span>${E(x.name)}<small>사업장</small>${inh(e)}</span>${dis ? '' : seg('s', x.id, SR.get(x.id))}</div>`; };
   const draw = () => {
-    const rows = orgFlat().filter(({o}) => !q || orgPath(o.id, true).toLowerCase().includes(q));
+    let html;
+    if(q){
+      const os = orgFlat(o => orgPath(o.id, true).toLowerCase().includes(q)).map(({o, d}) => orgRow(o, 0));
+      const ss = sites.filter(x => (x.name + ' ' + (x.org ? orgPath(x.org) : '')).toLowerCase().includes(q)).map(x => siteRow(x, 0).replace('<small>사업장</small>', `<small>사업장 · ${E(x.org ? orgPath(x.org) : '조직 미지정')}</small>`));
+      html = [...os, ...ss].join('') || '<div class="sc-row">찾는 조직·사업장이 없습니다</div>';
+    } else {
+      html = orgTreeRows(open, extra).map(r => r.o ? orgRow(r.o, r.d) : siteRow(r.s, r.d)).join('');
+      if((extra[NOORG] || []).length) html += `<div class="sc-row"><span class="sc-nm tg" data-t="${NOORG}">${open.has(NOORG) ? '<span class="tw">▼</span>' : '<span class="tw">▶</span>'}조직 미지정 사업장<small class="sc-n">${extra[NOORG].length}</small></span></div>` + (open.has(NOORG) ? extra[NOORG].map(x => siteRow(x, 1)).join('') : '');
+      html = html || '<div class="sc-row">조직이 없습니다</div>';
+    }
     $('scBody').innerHTML = lv === 'multi' ? `
-      <div class="sc-tools"><input type="search" id="scQ" placeholder="🔍 조직 검색" value="${E(q)}"><span class="sc-sum">${E(build().label || '')}</span></div>
-      <div class="sc-list">${rows.map(({o, d}) => { const e = eff(o.id), dis = !can(o);
-        return `<div class="sc-row${dis ? ' dis' : ''}" style="padding-left:${8 + d * 16}px"><span class="sc-nm">${E(o.name)}${o.kind ? `<small>${E(o.kind)}</small>` : ''}${!e.own && e.p !== 'none' ? `<small class="inh">${e.p === 'edit' ? '✏️' : '👁'} 위 조직 따름</small>` : ''}</span>
-          ${dis ? '' : `<span class="sc-3">${[['', '—'], ['edit', '✏️ 수정'], ['view', '👁 보기']].map(([v, t]) => `<button type="button" data-o="${E(o.id)}" data-v="${v}" class="${(R.get(o.id) || '') === v ? 'on' : ''}">${t}</button>`).join('')}</span>`}</div>`; }).join('') || '<div class="sc-row">조직이 없습니다</div>'}</div>
+      <div class="sc-tools"><input type="search" id="scQ" placeholder="🔍 조직·사업장 검색" value="${E(q)}"><span class="sc-sum">${E(build().label || '')}</span></div>
+      <div class="sc-list">${html}</div>
+      ${sites.err ? `<p class="hint" style="color:#b54708">${sites.err === 'sql' ? '사업장 목록을 보려면 서버에 server/supabase_scope_sites.sql 을 한 번 실행해야 합니다.' : '사업장 목록을 불러오지 못했습니다: ' + E(sites.err)}</p>` : ''}
       ${isAdmin() ? `<label class="seg wl" style="margin-top:8px"><span><input type="checkbox" id="scRest" ${rest === 'view' ? 'checked' : ''}> 위에서 정하지 않은 나머지 조직은 👁 보기만</span></label>` : ''}
-      ${siteRules.length ? `<p class="hint">근태관리에서 사업장 단위로 따로 정한 권한 ${siteRules.length}건은 그대로 둡니다 (근태관리 › 관리 범위에서 바꿉니다).</p>` : ''}
-      <p class="hint">아래 조직은 위 조직 권한을 따릅니다. 아래 조직에 따로 정하면 그 조직은 따로 정한 권한이 우선합니다. 예) 서부지사 ✏️수정 · 동부·남부·중부지사 👁보기</p>`
+      <p class="hint">▶ 를 누르면 아래 단계(조직 → 사업장)가 펼쳐지고, 다시 누르면 접힙니다. 아래 조직·사업장은 위 조직 권한을 따르고, 따로 정하면 그쪽이 우선합니다. 예) 서부지사 ✏️수정 · 동부·남부·중부지사 👁보기 · ○○사업장만 ✏️수정</p>`
       : lv === 'all' ? `<div class="seg"><label><input type="radio" name="scP" value="edit" ${allPerm === 'edit' ? 'checked' : ''}> ✏️ 수정</label><label><input type="radio" name="scP" value="view" ${allPerm === 'view' ? 'checked' : ''}> 👁 보기만</label></div>`
       : '<p class="hint">관리범위가 없으면 자기 기기·계정 자료만 봅니다(공유 안 함).</p>';
+    const keep = $('scBody').querySelector('.sc-list'); 
     if($('scQ')) $('scQ').oninput = () => { q = $('scQ').value.trim().toLowerCase(); const pos = $('scQ').selectionStart; draw(); $('scQ').focus(); try{ $('scQ').setSelectionRange(pos, pos); }catch(e){} };
-    $('scBody').querySelectorAll('.sc-3 button').forEach(b => b.onclick = () => { const v = b.dataset.v; if(v) R.set(b.dataset.o, v); else R.delete(b.dataset.o); draw(); });
-    if($('scRest')) $('scRest').onchange = () => { rest = $('scRest').checked ? 'view' : 'none'; draw(); };
+    $('scBody').querySelectorAll('.tg[data-t]').forEach(t => t.onclick = () => { const id = t.dataset.t; if(id !== NOORG && !orgHasKids(id, extra)) return; open.has(id) ? open.delete(id) : open.add(id); redraw(); });
+    $('scBody').querySelectorAll('.sc-3 button').forEach(b => b.onclick = () => { const M = b.dataset.k === 's' ? SR : R, v = b.dataset.v; if(v) M.set(b.dataset.o, v); else M.delete(b.dataset.o); redraw(); });
+    if($('scRest')) $('scRest').onchange = () => { rest = $('scRest').checked ? 'view' : 'none'; redraw(); };
     document.querySelectorAll('input[name=scP]').forEach(r => r.onchange = () => { allPerm = r.value; });
   };
-  pop(`<h3>🗺 관리범위</h3><p>${E(u.name || u.email)} · ${E(u.email)}<br>지금: <b>${E(scopeLabel(cur))}</b><br><small>근태관리 · 사업장 지도 등 여러 프로그램이 같은 관리범위를 씁니다. 조직마다 ✏️수정 / 👁보기를 따로 줄 수 있습니다.</small></p>
+  const redraw = () => { const l = $('scBody').querySelector('.sc-list'), y = l ? l.scrollTop : 0; draw(); const l2 = $('scBody').querySelector('.sc-list'); if(l2) l2.scrollTop = y; };
+  pop(`<h3>🗺 관리범위</h3><p>${E(u.name || u.email)} · ${E(u.email)}<br>지금: <b>${E(scopeLabel(cur))}</b><br><small>근태관리 · 사업장 지도 등 여러 프로그램이 같은 관리범위를 씁니다. 조직·사업장마다 ✏️수정 / 👁보기를 따로 줄 수 있습니다.</small></p>
     <div class="seg" id="scLv">${isOwner() ? `<label><input type="radio" name="scL" value="all" ${lv === 'all' ? 'checked' : ''}> 전체</label>` : ''}<label><input type="radio" name="scL" value="multi" ${lv === 'multi' ? 'checked' : ''}> 조직별로 정하기</label><label><input type="radio" name="scL" value="" ${!lv ? 'checked' : ''}> 지정 안 함</label></div>
     <div id="scBody"></div>
     ${isOwner() ? `<label class="seg wl"><span><input type="checkbox" id="scLk" ${u.extra && u.extra.scope_lock ? 'checked' : ''}> ⭐ 제작자 지정으로 고정 (조직 관리자가 바꿀 수 없음)</span></label>` : ''}
@@ -1589,7 +1632,7 @@ async function userScope(u){
   $('scX').onclick = closePop;
   $('scV').onclick = async () => {
     const v = build();
-    if(lv === 'multi' && !R.size && !siteRules.length && rest !== 'view'){ $('scErr').textContent = '조직을 하나 이상 「✏️ 수정」 또는 「👁 보기」로 정하세요'; return; }
+    if(lv === 'multi' && !R.size && !SR.size && rest !== 'view'){ $('scErr').textContent = '조직이나 사업장을 하나 이상 「✏️ 수정」 또는 「👁 보기」로 정하세요'; return; }
     if($('scLk')) v.lock = $('scLk').checked;
     closePop(); await orgUpd(u, 'scope', JSON.stringify(v), '관리범위를 저장했습니다');
   };
