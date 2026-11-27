@@ -221,6 +221,7 @@ html[data-theme="dark"] .trial-bar{background:#3A3016;border-color:#6B5A23;color
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0;line-height:1.5}
 .sc-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}.sc-tools input{flex:1;min-width:160px}.sc-sum{font-size:12px;color:var(--mute)}
 .sc-list{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.sc-list.sc-need{outline:3px solid #f04438;outline-offset:2px}
 .sc-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px}.sc-row:last-child{border-bottom:0}.sc-row.dis{opacity:.45}
 .tg{cursor:pointer;user-select:none}.tw{display:inline-block;width:18px;font-size:10px;color:var(--mute);text-align:center}.tw.nk{opacity:.6}.kc{margin-left:6px;font-size:11px;color:var(--mute);font-weight:400}
 .sc-row.site{background:rgba(127,127,127,.04)}.sc-nm small.sc-n{color:#2563eb}
@@ -524,7 +525,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.10.3';
+const APP_VERSION = '1.10.4';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -1575,7 +1576,9 @@ async function userScope(u){
   const effSite = x => SR.has(x.id) ? {p: SR.get(x.id), own: true} : (() => { const e = x.org ? effOrg(x.org) : {p: rest}; return {p: e.p, own: false}; })();
   const nm = id => (orgById(id) || {}).name || id, snm = id => (siteById[id] || {}).name || id;
   /* 처음 펼침: 맨 위 + 권한을 준 조직·사업장이 보이도록 그 위 조직들 */
+  /* v1.10.4 처음부터 회사 아래 단계(지사·본부)까지 펼쳐서 바로 ✏️/👁 를 고를 수 있게 */
   const open = new Set(orgRoots().map(o => o.id));
+  orgRoots().forEach(r => orgKids(r.id).forEach(k => { open.add(k.id); }));
   [...R.keys()].forEach(id => orgChain(id).slice(1).forEach(c => open.add(c)));
   [...SR.keys()].forEach(id => { const x = siteById[id]; if(x && x.org) orgChain(x.org).forEach(c => open.add(c)); });
   const build = () => {
@@ -1607,7 +1610,8 @@ async function userScope(u){
       html = html || '<div class="sc-row">조직이 없습니다</div>';
     }
     $('scBody').innerHTML = lv === 'multi' ? `
-      <div class="sc-tools"><input type="search" id="scQ" placeholder="🔍 조직·사업장 검색" value="${E(q)}"><span class="sc-sum">${E(build().label || '')}</span></div>
+      <p class="hint" style="margin:0 0 6px"><b>① 조직(지사) 또는 사업장 오른쪽의 「✏️ 수정」·「👁 보기」를 누르고 → ② 아래 「저장」</b>을 누르세요. (「—」는 따로 정하지 않음)</p>
+      <div class="sc-tools"><input type="search" id="scQ" placeholder="🔍 조직·사업장 검색" value="${E(q)}"><span class="sc-sum">${E((R.size || SR.size || rest === 'view') ? '고른 범위: ' + (build().label || '') : '아직 고른 조직이 없습니다')}</span></div>
       <div class="sc-list">${html}</div>
       ${sites.err ? `<p class="hint" style="color:#b54708">${sites.err === 'sql' ? '사업장 목록을 보려면 서버에 server/supabase_scope_sites.sql 을 한 번 실행해야 합니다.' : '사업장 목록을 불러오지 못했습니다: ' + E(sites.err)}</p>` : ''}
       ${isAdmin() ? `<label class="seg wl" style="margin-top:8px"><span><input type="checkbox" id="scRest" ${rest === 'view' ? 'checked' : ''}> 위에서 정하지 않은 나머지 조직은 👁 보기만</span></label>` : ''}
@@ -1633,7 +1637,7 @@ async function userScope(u){
   $('scX').onclick = closePop;
   $('scV').onclick = async () => {
     const v = build();
-    if(lv === 'multi' && !R.size && !SR.size && rest !== 'view'){ $('scErr').textContent = '조직이나 사업장을 하나 이상 「✏️ 수정」 또는 「👁 보기」로 정하세요'; return; }
+    if(lv === 'multi' && !R.size && !SR.size && rest !== 'view'){ const m = '아직 고른 조직이 없습니다 — 목록에서 조직(지사)이나 사업장 오른쪽의 「✏️ 수정」 또는 「👁 보기」를 눌러 고른 뒤 저장하세요'; $('scErr').textContent = m; toast(m); const l = $('scBody').querySelector('.sc-list'); if(l){ l.classList.add('sc-need'); setTimeout(() => l.classList.remove('sc-need'), 1600); } return; }
     if($('scLk')) v.lock = $('scLk').checked;
     closePop(); await orgUpd(u, 'scope', JSON.stringify(v), '관리범위를 저장했습니다');
   };
