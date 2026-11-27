@@ -525,7 +525,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.10.4';
+const APP_VERSION = '1.10.5';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -891,7 +891,7 @@ function renderGrid(){
       ${pg.beta ? '<span class="ribbon">시험 공개</span>' : ''}
       <div class="bar"></div><div class="bd">
         <div class="row1"><img class="ico" src="${E(icon)}" alt="" onerror="this.src='icons/icon-192.png'"><div><h3 lang="en">${E(pg.full_name || pg.name)}</h3><div class="ko">${E(pg.full_name ? pg.name : '')}</div></div></div>
-        <div class="desc">${E(pg.note||'')}${pg.branches && pg.branches.length ? ` · 담당 ${E(pg.branches.join('·'))}지사` : ''}</div>
+        <div class="desc">${E(pg.note||'')}${pg.branches && pg.branches.length ? ` · 범위 ${E(brLabel(pg.branches))}` : ''}</div>
         <div class="foot">${tag}<span class="go">${ok ? '열기 <span aria-hidden="true">→</span>' : pg.access === 'trial_pick' ? '체험하기 →' : pg.access === 'trial_locked' ? '가입 신청' : '권한 요청'}</span></div>
       </div></button>`;
   });
@@ -1224,6 +1224,33 @@ function orgTreeRows(open, extra){
 }
 function orgHasKids(id, extra){ return orgKids(id).length > 0 || ((extra && extra[id]) || []).length > 0; }
 function orgCaret(id, open, extra){ return orgHasKids(id, extra) ? `<span class="tw">${open.has(id) ? '▼' : '▶'}</span>` : '<span class="tw nk">·</span>'; }
+/* v1.10.5 프로그램별 관리범위 — app_access.branches 에 'e:조직id'(✏️수정) / 'v:조직id'(👁보기)로 저장. 예전 '동부' 같은 지사 이름도 그대로 읽음 */
+function brRules(arr){ const R = new Map(); (arr || []).forEach(b => { const m = /^([ev]):(.+)$/.exec(b || ''); if(m) R.set(m[2], m[1] === 'v' ? 'view' : 'edit'); }); return R; }
+function brLabel(arr){
+  arr = arr || []; if(!arr.length) return '';
+  const R = brRules(arr), old = arr.filter(b => !/^[ev]:/.test(b));
+  const nm = id => { try{ const o = orgById(id); if(o) return o.name; }catch(e){} return ''; };
+  const cut = a => a.length > 2 ? a.slice(0, 2).join('·') + ` 외 ${a.length - 2}` : a.join('·');
+  const ed = [...R].filter(([, p]) => p === 'edit').map(([i]) => nm(i)), vw = [...R].filter(([, p]) => p === 'view').map(([i]) => nm(i));
+  if(R.size && ![...ed, ...vw].some(Boolean)) return '조직별 지정' + (old.length ? ' / ' + old.join('·') + '지사' : '');
+  return [ed.length ? cut(ed.filter(Boolean)) + ' ✏️' : '', vw.length ? cut(vw.filter(Boolean)) + ' 👁' : '', old.length ? old.join('·') + '지사' : ''].filter(Boolean).join(' / ');
+}
+/* 접고 펴는 조직 트리에서 조직마다 — / ✏️ 수정 / 👁 보기 고르기 (R: Map 조직id → 'edit'|'view') */
+function mountOrgPerm(el, R, lim, onChange){
+  const open = new Set(orgRoots().map(o => o.id)); [...R.keys()].forEach(id => orgChain(id).slice(1).forEach(c => open.add(c)));
+  const can = o => o.kind !== '그룹' && (!lim || orgUnder(o.id, lim));
+  const eff = id => { for(const c of orgChain(id)){ if(R.has(c)) return {p: R.get(c), own: c === id}; } return {p: 'none', own: false}; };
+  const draw = () => {
+    const l0 = el.querySelector('.sc-list'), y = l0 ? l0.scrollTop : 0;
+    el.innerHTML = `<div class="sc-list" style="max-height:38vh">${orgTreeRows(open).map(({o, d}) => { const dis = !can(o), e = eff(o.id);
+      return `<div class="sc-row${dis ? ' dis' : ''}" style="padding-left:${8 + d * 18}px"><span class="sc-nm tg" data-t="${E(o.id)}">${orgCaret(o.id, open)}${E(o.name)}${o.kind ? `<small>${E(o.kind)}</small>` : ''}${!e.own && e.p !== 'none' ? `<small class="inh">${e.p === 'edit' ? '✏️' : '👁'} 위 조직 따름</small>` : ''}</span>
+        ${dis ? '' : `<span class="sc-3">${[['', '—'], ['edit', '✏️ 수정'], ['view', '👁 보기']].map(([v, t]) => `<button type="button" data-o="${E(o.id)}" data-v="${v}" class="${(R.get(o.id) || '') === v ? 'on' : ''}">${t}</button>`).join('')}</span>`}</div>`; }).join('') || '<div class="sc-row">조직이 없습니다</div>'}</div>`;
+    const l = el.querySelector('.sc-list'); if(l) l.scrollTop = y;
+    el.querySelectorAll('.tg[data-t]').forEach(t => t.onclick = () => { const id = t.dataset.t; if(!orgHasKids(id)) return; open.has(id) ? open.delete(id) : open.add(id); draw(); });
+    el.querySelectorAll('.sc-3 button').forEach(b => b.onclick = () => { const v = b.dataset.v; if(v) R.set(b.dataset.o, v); else R.delete(b.dataset.o); draw(); if(onChange) onChange(); });
+  };
+  draw();
+}
 function orgOptions(sel, opt){
   opt = opt || {};
   return orgFlat(opt.filter).map(({o, d}) => `<option value="${E(o.id)}" ${o.id === sel ? 'selected' : ''} ${opt.disable && opt.disable(o) ? 'disabled' : ''}>${'　'.repeat(Math.max(0, d - (opt.skipGroup ? 1 : 0)))}${E(o.name)}${o.active === false ? ' (닫힘)' : ''}</option>`).join('');
@@ -1969,7 +1996,7 @@ async function admAccess(reload){
         : `<span class="cell" title="공통 관리범위">${E(scopeLabel(scopeById[u.id]))}<small>공통 관리범위</small></span>`; }
     const x = (u.apps || {})[ap.code];
     if(!x || x.perm !== 'use') return `<button class="cell off" data-u="${u.id}" data-a="${ap.code}">사용 안 함<small>눌러서 지정</small></button>`;
-    const ex = x.expires_at && x.expires_at < todayKST(); const br = (x.branches && x.branches.length) ? x.branches.join('·') : '전체 지사';
+    const ex = x.expires_at && x.expires_at < todayKST(); const br = brLabel(x.branches) || '관리범위 그대로';
     const fl = x.features && (ap.features || []).length ? ' · ' + (ap.features || []).filter(f => x.features.includes(f.key)).map(f => f.name).join('·') : '';
     return `<button class="cell ${ex ? 'exp' : 'on'}" data-u="${u.id}" data-a="${ap.code}">${ex ? '기한 만료' : '사용'}<small>${E(br)}${E(fl)}${x.expires_at ? ' · ~' + E(x.expires_at) : ''}</small></button>`;
   };
@@ -1989,7 +2016,8 @@ async function admAccess(reload){
     ...apps.map(a => (u.role !== 'user') ? '전체' : a.open_all ? '전체 공개' : (a.code === 'ams' || a.uses_access === false) ? scopeLabel(scopeById[u.id]) : ((u.apps||{})[a.code] && u.apps[a.code].perm === 'use' ? '사용' + (u.apps[a.code].expires_at ? ' ~' + u.apps[a.code].expires_at : '') : '사용 안 함'))]));
 }
 async function scopeFromAccess(uid){ const u = ADM.users.find(x => x.id === uid) || ADM.access.find(x => x.id === uid); if(!u) return; await userScope(u); }
-function editAccess(uid, code){
+async function editAccess(uid, code){
+  await ensureOrgs();
   const u = ADM.access.find(x => x.id === uid), ap = regList().find(a => a.code === code); if(!u || !ap) return;
   const x = (u.apps || {})[code] || {perm:'none', expires_at:null, branches:[]};
   pop(`<h3>🔐 ${E(ap.name)}</h3><p>${E(u.name || u.email)} · ${E(u.email)}<br><small>${E(ap.full_name || '')}</small></p>
@@ -1997,13 +2025,21 @@ function editAccess(uid, code){
     ${(ap.features || []).length ? `<label class="p-f"><span>세부 기능 (모두 켜면 이 사람 조직에 열린 기능 모두)</span><div class="seg" id="apF">${ap.features.map(f => `<label><input type="checkbox" value="${E(f.key)}" ${!x.features || x.features.includes(f.key) ? 'checked' : ''}> ${E(f.name)}</label>`).join('')}</div></label>` : ''}
     <label class="p-f"><span>이 프로그램 사용기한 (비우면 계정 기한만 적용)</span><input type="date" id="apE" value="${E(x.expires_at || '')}"></label>
     ${ORG_SERVER && mperm('scope') ? `<div class="p-f"><span>관리 범위 — 조직별 수정 / 보기 (모든 프로그램 공통)</span><button type="button" class="btn sm sec" id="apSc">🗺 ${E(scopeLabel((ADM.users.find(z => z.id === uid) || {}).scope))} — 바꾸기</button></div>` : ''}
-    <label class="p-f"><span>이 프로그램만 담당 지사 더 좁히기 (모두 비우면 위 관리범위 그대로)</span><div class="seg">${BRANCHES.map(b => `<label><input type="checkbox" value="${b}" ${(x.branches||[]).includes(b) ? 'checked' : ''}> ${b}지사</label>`).join('')}</div></label>
+    <div class="p-f"><span>이 프로그램만 관리범위 따로 정하기 — 조직별 ✏️수정 / 👁보기 <small style="font-weight:400;color:var(--mute)">(아무것도 고르지 않으면 위 공통 관리범위 그대로)</small></span>
+      <div class="sc-tools" style="margin:4px 0"><span class="sc-sum" id="apBrS"></span><button type="button" class="btn sm sec" id="apBrC">모두 지우기</button></div>
+      <div id="apBr"></div>${(x.branches || []).some(b => !/^[ev]:/.test(b)) ? `<p class="hint">예전 방식 지사 지정(${E((x.branches || []).filter(b => !/^[ev]:/.test(b)).join('·'))})은 저장하면 위 조직 선택으로 바뀝니다.</p>` : ''}
+      <p class="hint">▶ 를 누르면 아래 조직이 펼쳐지고, 다시 누르면 접힙니다. 아래 조직은 위 조직 권한을 따르고, 따로 정하면 그쪽이 우선합니다.</p></div>
     <div class="p-row"><button class="btn sec" id="apX">취소</button><button class="btn" id="apS">저장</button></div>`);
   $('apX').onclick = closePop;
+  const BR = brRules(x.branches);
+  if(!BR.size) (x.branches || []).forEach(b => { const o = ORGS.find(z => z.kind === '지사' && z.name === b + '지사' && /베스트/.test(orgPath(z.id))); if(o) BR.set(o.id, 'edit'); });
+  const brSum = () => { $('apBrS').textContent = BR.size ? '지금: ' + brLabel([...BR].map(([id, p]) => (p === 'view' ? 'v:' : 'e:') + id)) : '지금: 공통 관리범위 그대로'; };
+  mountOrgPerm($('apBr'), BR, isAdmin() ? null : (ORGI.manager.orgs || []), brSum); brSum();
+  $('apBrC').onclick = () => { BR.clear(); mountOrgPerm($('apBr'), BR, isAdmin() ? null : (ORGI.manager.orgs || []), brSum); brSum(); };
   if($('apSc')) $('apSc').onclick = () => { closePop(); scopeFromAccess(uid); };
   $('apS').onclick = async () => {
     const perm = document.querySelector('input[name=apP]:checked').value, ex = $('apE').value || null;
-    const brs = [...document.querySelectorAll('#popBox .seg:not(#apF) input[type=checkbox]:checked')].map(i => i.value);
+    const brs = [...BR].map(([id, p]) => (p === 'view' ? 'v:' : 'e:') + id);
     const fAll = [...document.querySelectorAll('#apF input')], fOn = fAll.filter(i => i.checked).map(i => i.value);
     const feats = !fAll.length || fOn.length === fAll.length ? null : fOn;
     const {error} = ORG_SERVER ? await SB.rpc('org_set_app_access', {p_user:uid, p_app:code, p_perm:perm, p_expires:ex, p_branches:brs, p_features:feats})
