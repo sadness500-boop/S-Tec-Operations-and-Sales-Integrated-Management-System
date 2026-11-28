@@ -6,6 +6,7 @@
 --       rules {조직id: 'edit'|'view'} · rest · all · src('app'|'common'|'none')
 --       branches      = 볼 수 있는 에스텍베스트 지사 이름(예전 방식 프로그램용, 범위가 없으면 빈 목록 = 제한 없음)
 --       edit_branches = 고칠 수 있는 지사 이름
+--       perm_map      = {조직id: 'edit'|'view'} — 범위 안 조직 전부(없으면 null = 제한 없음)
 --   · 성과 관리(stpm) · 출입관리(stac) 서버 함수도 같은 범위를 씁니다.
 --   Supabase › SQL Editor 에서 한 번 실행하세요.   Designed & Developed by Rat Rae Choi
 -- =====================================================================
@@ -90,6 +91,13 @@ begin
   return out;
 end $$;
 
+-- 조직마다 권한 표 {조직id: 'edit'|'view'} (전체 권한이거나 범위가 없으면 null = 제한 없음)
+create or replace function public._eff_perm_map(e jsonb) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select case when coalesce((e->>'all')::boolean, false) or e->>'src' in ('none','admin') then null
+    else coalesce((select jsonb_object_agg(o.id, p) from (select id, public._eff_perm(e, id) p from public.org_units) o where p is not null), '{}'::jsonb) end;
+$$;
+
 -- 각 프로그램에 넘기는 권한 확인 (v1.10.0 체험 처리 그대로 + 범위)
 create or replace function public.app_check(p_app text) returns json
 language plpgsql security definer set search_path = public as $$
@@ -113,7 +121,7 @@ begin
     e := public._eff_app_rules(pr.id, p_app);
     return json_build_object('ok', true, 'perm', 'use', 'admin', pr.role in ('owner','admin'), 'extra', coalesce((s->>'extra')::boolean, false),
       'trial', coalesce((s->>'trial')::boolean, false), 'expires_at', s->>'app_expires_at',
-      'branches', public._eff_branches(e, false), 'edit_branches', public._eff_branches(e, true), 'scope', e, 'features', s->'features');
+      'branches', public._eff_branches(e, false), 'edit_branches', public._eff_branches(e, true), 'scope', e, 'perm_map', public._eff_perm_map(e), 'features', s->'features');
   end if;
   if s->>'access' = 'trial_locked' then return json_build_object('ok', false, 'reason', 'trial_locked', 'trial_app', pr.trial_app); end if;
   if s->>'access' = 'expired' then return json_build_object('ok', false, 'reason', 'app_expired', 'expires_at', s->>'app_expires_at'); end if;
@@ -176,6 +184,7 @@ end $$;
 revoke all on function public._eff_app_rules(uuid, text) from public, anon, authenticated;
 revoke all on function public._eff_perm(jsonb, text) from public, anon, authenticated;
 revoke all on function public._eff_branches(jsonb, boolean) from public, anon, authenticated;
+revoke all on function public._eff_perm_map(jsonb) from public, anon, authenticated;
 revoke all on function public._ou_up(text) from public, anon, authenticated;
 revoke all on function public._pm_scope() from public, anon;
 revoke all on function public._ac_scope() from public, anon, authenticated;
