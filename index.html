@@ -525,7 +525,7 @@ table.t.acc .pill{white-space:normal;font-size:10.5px;padding:3px 6px;line-heigh
    ===================================================================== */
 (function(){
 'use strict';
-const APP_VERSION = '1.10.5';
+const APP_VERSION = '1.11.0';
 const APP_DATE = '2026-11-19';
 const CREATOR = 'Rat Rae Choi';
 const WEB_URL = 'https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/';
@@ -1996,7 +1996,7 @@ async function admAccess(reload){
         : `<span class="cell" title="공통 관리범위">${E(scopeLabel(scopeById[u.id]))}<small>공통 관리범위</small></span>`; }
     const x = (u.apps || {})[ap.code];
     if(!x || x.perm !== 'use') return `<button class="cell off" data-u="${u.id}" data-a="${ap.code}">사용 안 함<small>눌러서 지정</small></button>`;
-    const ex = x.expires_at && x.expires_at < todayKST(); const br = brLabel(x.branches) || '관리범위 그대로';
+    const ex = x.expires_at && x.expires_at < todayKST(); const br = brLabel(x.branches) || '공통 범위';
     const fl = x.features && (ap.features || []).length ? ' · ' + (ap.features || []).filter(f => x.features.includes(f.key)).map(f => f.name).join('·') : '';
     return `<button class="cell ${ex ? 'exp' : 'on'}" data-u="${u.id}" data-a="${ap.code}">${ex ? '기한 만료' : '사용'}<small>${E(br)}${E(fl)}${x.expires_at ? ' · ~' + E(x.expires_at) : ''}</small></button>`;
   };
@@ -2006,7 +2006,7 @@ async function admAccess(reload){
     $('acBody').innerHTML = rows.map(u => `<tr><td class="wrap"><b>${E(u.name || '(이름 없음)')}</b><br><small style="color:var(--mute)">${E(u.email)} · ${E(ROLE_KO[u.role] || '')} · ${E(STATUS_KO[u.status] || '')}${u.org_path ? '<br>' + E(u.org_path) : ''}</small></td>${apps.map(a => `<td class="app${a.code === 'ams' || a.uses_access === false ? ' ams' : ''}">${cell(u, a)}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${apps.length+1}">사용자가 없습니다</td></tr>`;
     $('acBody').querySelectorAll('button.cell').forEach(b => b.onclick = () => b.dataset.sc ? scopeFromAccess(b.dataset.sc) : editAccess(b.dataset.u, b.dataset.a));
   };
-  body.innerHTML = `<div class="note">하나의 아이디로 쓰는 <b>${apps.length}개 프로그램</b>의 사용 권한을 사람마다 따로 줍니다. 칸을 누르면 <b>사용 / 사용 안 함 · 이 프로그램 사용기한 · 관리 범위(담당 지사)</b>를 정합니다.<br>
+  body.innerHTML = `<div class="note">하나의 아이디로 쓰는 <b>${apps.length}개 프로그램</b>의 사용 권한을 사람마다 따로 줍니다. 칸을 누르면 <b>사용 / 사용 안 함 · 이 프로그램 사용기한 · 이 프로그램만의 관리범위</b>(조직별 ✏️수정 / 👁보기)를 정합니다. 「공통 범위」 = 따로 정하지 않아 근태관리 칸의 공통 관리범위를 그대로 씁니다.<br>
     제작자·관리자는 모든 프로그램을 씁니다. 근태관리 칸을 누르면 <b>공통 관리범위</b>(조직마다 ✏️수정 / 👁보기)를 정합니다 — 제작자와 「관리범위 지정」 권한이 있는 조직 관리자가 바꿀 수 있습니다.${ORG_SERVER ? '<br><b>조직 비공개</b> = 그 사람 회사·조직에 열리지 않은 프로그램(제작자가 「🏢 회사·조직」에서 엶) · <b>⭐ 제작자 추가</b> = 제작자가 이 사람에게만 따로 준 권한' : ''}</div>
     <div class="tools"><input type="search" id="acQ" placeholder="🔍 이름·이메일·부서 검색" value="${E(ADM.q)}"><button class="btn sm sec" id="acCsv">⬇️ 엑셀(CSV)</button></div>
     <div class="tbl-wrap"><table class="t acc" style="--n:${apps.length}"><thead><tr><th>사용자</th>${apps.map(a => `<th class="app"><img src="${E(a.icon || 'icons/icon-192.png')}" alt="" onerror="this.style.display='none'">${E(a.name)}</th>`).join('')}</tr></thead><tbody id="acBody"></tbody></table></div>`;
