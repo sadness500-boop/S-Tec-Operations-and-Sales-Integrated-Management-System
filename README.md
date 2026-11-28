@@ -1,8 +1,8 @@
 # S-Tec Operations and Sales Integrated Management System
 ### 에스텍 운영 및 영업 통합관리 시스템 · v1.9.3
 
-하나의 아이디로 에스텍 11개 프로그램을 쓰는 **메인 프로그램**입니다.
-메인 화면에는 11개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
+하나의 아이디로 에스텍 12개 프로그램을 쓰는 **메인 프로그램**입니다.
+메인 화면에는 12개 프로그램 메뉴가 있고, 제작자는 **관리 콘솔** 한 곳에서 모든 사용자를 관리합니다.
 
 | 순서 | 프로그램 (English) | 한글 | 저장소 |
 |---|---|---|---|
@@ -16,7 +16,8 @@
 | 8 | Legal Response System | 법률 대응 시스템 | S-Tec-Legal-Response-System |
 | 9 | S-Tec Proposal Production System | 제안서 제작시스템 | S-Tec-Proposal-Production-System |
 | 10 | S-Tec Performance Management System | 성과 관리 시스템 | S-Tec-Performance-Management-System |
-| 11 | S-Tec Integrated Access Control System | 통합 출입관리 시스템 | S-Tec-Integrated-Access-Control-System |
+| 11 | S-Tec Remote Data Extraction Program | 데이터 추출 프로그램 | Remote-data-extraction-program |
+| 12 | S-Tec Integrated Access Control System | 통합 출입관리 시스템 | S-Tec-Integrated-Access-Control-System |
 
 - 웹 주소: https://sadness500-boop.github.io/S-Tec-Operations-and-Sales-Integrated-Management-System/
 - 미리보기(데모 모드, 서버 연결 없음): 위 주소 끝에 `?demo=1` (일반 사용자 화면은 `?demo=1&as=user`)
